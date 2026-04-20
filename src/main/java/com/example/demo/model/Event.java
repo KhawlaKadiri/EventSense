@@ -1,0 +1,175 @@
+package com.example.demo.model;
+
+import javax.persistence.*;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = "events")
+public class Event {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+
+    @Column(nullable = false, length = 255)
+    private String title;
+
+    @Column(columnDefinition = "TEXT")
+    private String description;
+
+    @Column(length = 100)
+    private String category;
+
+    @Column(length = 255)
+    private String location;
+
+    @Column(name = "event_date", nullable = false)
+    private LocalDateTime eventDate;
+
+    @Column(name = "duration_minutes")
+    private Integer durationMinutes;
+
+    @Column(precision = 8, scale = 2)
+    private BigDecimal price;
+
+    @Column(name = "age_min")
+    private Integer ageMin;
+
+    @Column(name = "age_max")
+    private Integer ageMax;
+
+    @Column(name = "total_seats")
+    private Integer totalSeats;
+
+    @Column(name = "available_seats")
+    private Integer availableSeats;
+
+    @Column(name = "organizer_id")
+    private Integer organizerId;  // Optionnellement, tu peux faire une relation @ManyToOne si tu veux lier à un User
+
+    @Column(name = "created_at", insertable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at", insertable = false, updatable = false)
+    private LocalDateTime updatedAt;
+
+    // Constructeur par défaut
+    public Event() {}
+
+    // Getters et Setters
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+    public String getLocation() {
+        return location;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
+    }
+
+    public LocalDateTime getEventDate() {
+        return eventDate;
+    }
+
+    public void setEventDate(LocalDateTime eventDate) {
+        this.eventDate = eventDate;
+    }
+
+    public Integer getDurationMinutes() {
+        return durationMinutes;
+    }
+
+    public void setDurationMinutes(Integer durationMinutes) {
+        this.durationMinutes = durationMinutes;
+    }
+
+    public BigDecimal getPrice() {
+        return price;
+    }
+
+    public void setPrice(BigDecimal price) {
+        this.price = price;
+    }
+
+    public Integer getAgeMin() {
+        return ageMin;
+    }
+
+    public void setAgeMin(Integer ageMin) {
+        this.ageMin = ageMin;
+    }
+
+    public Integer getAgeMax() {
+        return ageMax;
+    }
+
+    public void setAgeMax(Integer ageMax) {
+        this.ageMax = ageMax;
+    }
+
+    public Integer getTotalSeats() {
+        return totalSeats;
+    }
+
+    public void setTotalSeats(Integer totalSeats) {
+        this.totalSeats = totalSeats;
+    }
+
+    public Integer getAvailableSeats() {
+        return availableSeats;
+    }
+
+    public void setAvailableSeats(Integer availableSeats) {
+        this.availableSeats = availableSeats;
+    }
+
+    public Integer getOrganizerId() {
+        return organizerId;
+    }
+
+    public void setOrganizerId(Integer organizerId) {
+        this.organizerId = organizerId;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+}

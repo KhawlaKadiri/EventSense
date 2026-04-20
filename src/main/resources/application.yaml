@@ -1,0 +1,25 @@
+server:
+  port: 8091
+
+spring:
+  # Database configuration
+  datasource:
+    # if working with mysql change jdbc:postgresql to jdbc:mysql:
+    url: jdbc:postgresql://localhost:5432/EventSense?useSSL=false
+    username: postgres
+    password: Khawla
+    driver-class-name: org.postgresql.Driver
+
+    # if you are using Mysql
+    # driver-class-name: com.mysql.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+      naming:
+        implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyJpaImpl
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        # dialect: org.hibernate.dialect.MySQL5Dialect
