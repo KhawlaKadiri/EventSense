@@ -1,0 +1,14 @@
+#!/bin/bash
+
+echo "=============================="
+echo " POST-COMMIT CI/CD PIPELINE"
+echo "=============================="
+
+echo "Stopping ONLY EventSense application..."
+
+taskkill //F //FI "WINDOWTITLE eq app.jar" 2>/dev/null || true
+
+echo "Running build + deploy..."
+bash /c/Users/dell/Documents/EventSense/basic-ci-cd.sh
+
+echo "Done ✔"

@@ -1,0 +1,26 @@
+pipeline {
+    agent any
+
+    stages {
+
+        stage('Kill old app') {
+            steps {
+                bat '''
+                for /f "tokens=5" %%a in ('netstat -ano ^| findstr :8091') do taskkill /F /PID %%a
+                '''
+            }
+        }
+
+        stage('Build app') {
+            steps {
+                bat 'mvn clean install'
+            }
+        }
+
+        stage('Run app') {
+            steps {
+                bat 'mvn spring-boot:run'
+            }
+        }
+    }
+}
