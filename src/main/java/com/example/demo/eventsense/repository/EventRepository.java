@@ -11,21 +11,21 @@ import java.util.List;
 @Repository
 public interface EventRepository extends JpaRepository<Event, Integer> {
 
-    // 🔍 search by title (partial + case insensitive)
+    //  search by title (partial + case insensitive)
     List<Event> findByTitleContainingIgnoreCase(String title);
 
-    // 📂 filter by category
+    //  filter by category
     List<Event> findByCategory(String category);
 
-    // 📍 filter by location
+    //  filter by location
     List<Event> findByLocation(String location);
 
-    // ⏳ events before a date
+    //  events before a date
     List<Event> findByEventDateBefore(LocalDateTime date);
 
-    // ⏳ events after a date
+    //  events after a date
     List<Event> findByEventDateAfter(LocalDateTime date);
 
-    // 👤 by organizer
+    //  by organizer
     List<Event> findByOrganizerId(Integer organizerId);
 }
