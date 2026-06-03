@@ -56,9 +56,7 @@ public class Event {
     @Column(columnDefinition = "TEXT")
     private String actors;
 
-    // ✅ NEW FIELD: embedding
-    @Column(columnDefinition = "TEXT")
-    private String embedding;
+ 
 
     @Column(name = "created_at", insertable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -120,8 +118,7 @@ public class Event {
     public String getActors() { return actors; }
     public void setActors(String actors) { this.actors = actors; }
 
-    public String getEmbedding() { return embedding; }
-    public void setEmbedding(String embedding) { this.embedding = embedding; }
+    
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }

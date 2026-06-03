@@ -47,7 +47,7 @@ public class EventService {
                 // ✅ NEW
                 existingEvent.setBudget(updatedEvent.getBudget());
                 existingEvent.setActors(updatedEvent.getActors());
-                existingEvent.setEmbedding(updatedEvent.getEmbedding());
+                
 
                 existingEvent.setAgeMin(updatedEvent.getAgeMin());
                 existingEvent.setAgeMax(updatedEvent.getAgeMax());

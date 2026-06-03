@@ -15,68 +15,61 @@ public class PersonService {
     @Autowired
     private PersonRepository personRepository;
 
-    // Lire tous les utilisateurs
-    public List<Person> findAllPersons() {
-        return personRepository.findAll();
-    }
+    // READ user only
+   
+    public List<Person> findUsersOnly() {
+    return personRepository.findByRole("ROLE_USER");
+}
 
-    // Lire un utilisateur par ID
+    // READ BY ID
     public Optional<Person> findPersonById(int id) {
         return personRepository.findById(id);
     }
 
-    // Créer ou mettre à jour un utilisateur
+    // CREATE / SAVE (DEFAULT ROLE ADDED HERE)
     public Person savePerson(Person person) {
+
+        // ✅ IMPORTANT: default role if null
+        if (person.getRole() == null || person.getRole().isEmpty()) {
+            person.setRole("ROLE_USER");
+        }
+
         return personRepository.save(person);
     }
 
-    // Supprimer un utilisateur par ID
+    // DELETE
     public void deletePerson(int id) {
         personRepository.deleteById(id);
     }
 
-    // Mettre à jour un utilisateur
+    // UPDATE
     public Optional<Person> updatePerson(int id, Person updatedPerson) {
 
         return personRepository.findById(id)
             .map(existingPerson -> {
 
                 existingPerson.setFirstname(updatedPerson.getFirstname());
-
                 existingPerson.setLastname(updatedPerson.getLastname());
-
                 existingPerson.setBirthdaydate(updatedPerson.getBirthdaydate());
-
                 existingPerson.setPassword(updatedPerson.getPassword());
 
+                // ROLE UPDATE (ONLY ADMIN SHOULD USE THIS ENDPOINT)
+                if (updatedPerson.getRole() != null) {
+                    existingPerson.setRole(updatedPerson.getRole());
+                }
+
                 // NEW FIELDS
-
-                existingPerson.setPreferredCategories(
-                        updatedPerson.getPreferredCategories()
-                );
-
-                existingPerson.setPreferredLocations(
-                        updatedPerson.getPreferredLocations()
-                );
-
-                existingPerson.setBudgetMax(
-                        updatedPerson.getBudgetMax()
-                );
-
-                existingPerson.setPreferredActors(
-                        updatedPerson.getPreferredActors()
-                );
-
-                existingPerson.setPreferenceEmbedding(
-                        updatedPerson.getPreferenceEmbedding()
-                );
+                existingPerson.setPreferredCategories(updatedPerson.getPreferredCategories());
+                existingPerson.setPreferredLocations(updatedPerson.getPreferredLocations());
+                existingPerson.setBudgetMax(updatedPerson.getBudgetMax());
+                existingPerson.setPreferredActors(updatedPerson.getPreferredActors());
+                
 
                 return personRepository.save(existingPerson);
             });
     }
 
-    // SEARCH METHODS
-
+    // SEARCH
     public List<Person> findByFirstname(String firstname) {
         return personRepository.findByFirstname(firstname);
     }
@@ -91,5 +84,14 @@ public class PersonService {
 
     public List<Person> findByPreferredLocations(String location) {
         return personRepository.findByPreferredLocations(location);
+    }
+
+    // 🔐 OPTIONAL: promote user to admin (for testing)
+    public Person promoteToAdmin(int id) {
+        Person p = personRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        p.setRole("ROLE_ADMIN");
+        return personRepository.save(p);
     }
 }

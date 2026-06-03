@@ -28,4 +28,6 @@ public interface EventRepository extends JpaRepository<Event, Integer> {
 
     //  by organizer
     List<Event> findByOrganizerId(Integer organizerId);
+
+    List<Event> findByAvailableSeatsGreaterThan(Integer seats);
 }

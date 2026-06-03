@@ -23,3 +23,13 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         # dialect: org.hibernate.dialect.MySQL5Dialect
+logging:
+  level:
+    org.springframework.security: DEBUG
+
+
+groq:
+  api:
+    key: ${GROQ_API_KEY}
+    url: https://api.groq.com/openai/v1/chat/completions
+  model: llama-3.1-8b-instant

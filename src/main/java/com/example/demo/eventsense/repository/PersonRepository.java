@@ -11,6 +11,8 @@ import java.util.List;
 @Repository
 public interface PersonRepository extends JpaRepository<Person, Integer> {
 
+   
+
     // Trouver par prénom
     List<Person> findByFirstname(String firstname);
 
@@ -26,8 +28,11 @@ public interface PersonRepository extends JpaRepository<Person, Integer> {
     // Trouver par prénom et nom
     List<Person> findByFirstnameAndLastname(
             String firstname,
+        
             String lastname
     );
+
+    List<Person> findByRole(String role);
 
     // NEW SEARCHES
 

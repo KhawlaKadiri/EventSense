@@ -18,151 +18,66 @@ public class PersonRestController {
     @Autowired
     private PersonService personService;
 
-    // ===== CREATE USER =====
-    @PostMapping(value = "/create", consumes = "application/json")
-    public ResponseEntity<Person> createPerson(@RequestBody Person person) {
+    // ================= ADMIN ONLY =================
 
-        Person saved = personService.savePerson(person);
+    // GET ALL USERS (ADMIN ONLY)
+    @GetMapping("/users")
+    public ResponseEntity<?> getUsers(@RequestParam int requesterId) {
+        Optional<Person> requester = personService.findPersonById(requesterId);
+        if (requester.isEmpty())
+            return ResponseEntity.status(404).body("Requester not found");
+        if (!"ROLE_ADMIN".equals(requester.get().getRole()))
+            return ResponseEntity.status(403).body("Access denied: Admins only");
 
-        return ResponseEntity.ok(saved);
+        return ResponseEntity.ok(personService.findUsersOnly());
     }
 
-    // ===== GET ALL USERS =====
-    @GetMapping("/all")
-    public ResponseEntity<List<Person>> getAllPersons() {
-
-        return ResponseEntity.ok(personService.findAllPersons());
-    }
-
-    // ===== GET USER BY ID =====
-    @GetMapping("/info/{id}")
-    public ResponseEntity<Person> getPersonById(@PathVariable int id) {
-
-        Optional<Person> personOptional =
-                personService.findPersonById(id);
-
-        return personOptional
-                .map(ResponseEntity::ok)
-                .orElseGet(() ->
-                        ResponseEntity.notFound().build()
-                );
-    }
-
-    // ===== DELETE USER =====
+    // DELETE USER (ADMIN ONLY)
     @DeleteMapping("/delete/{id}")
-public ResponseEntity<?> deletePerson(@PathVariable int id) {
+    public ResponseEntity<?> delete(@RequestParam int requesterId,
+                                    @PathVariable int id) {
+        Optional<Person> requester = personService.findPersonById(requesterId);
+        if (requester.isEmpty())
+            return ResponseEntity.status(404).body("Requester not found");
+        if (!"ROLE_ADMIN".equals(requester.get().getRole()))
+            return ResponseEntity.status(403).body("Access denied: Admins only");
 
-    try {
-
-        Optional<Person> person = personService.findPersonById(id);
-
-        if (person.isEmpty()) {
-            return ResponseEntity
-                    .status(404)
-                    .body("User not found");
-        }
+        if (personService.findPersonById(id).isEmpty())
+            return ResponseEntity.status(404).body("User not found");
 
         personService.deletePerson(id);
-
         return ResponseEntity.ok("User deleted");
-
-    } catch (Exception e) {
-
-        return ResponseEntity
-                .status(500)
-                .body("ERROR: " + e.getMessage());
-    }
-}
-
-    // ===== UPDATE USER =====
-    @PutMapping(value = "/update/{id}",
-            consumes = "application/json")
-    public ResponseEntity<Person> updatePerson(
-            @PathVariable int id,
-            @RequestBody Person person) {
-
-        Optional<Person> existingPerson =
-                personService.findPersonById(id);
-
-        if (existingPerson.isEmpty()) {
-
-            return ResponseEntity.notFound().build();
-        }
-
-        Person p = existingPerson.get();
-
-        // BASIC FIELDS
-        p.setFirstname(person.getFirstname());
-
-        p.setLastname(person.getLastname());
-
-        p.setBirthdaydate(person.getBirthdaydate());
-
-        p.setPassword(person.getPassword());
-
-        // NEW PREFERENCE FIELDS
-        p.setPreferredCategories(
-                person.getPreferredCategories()
-        );
-
-        p.setPreferredLocations(
-                person.getPreferredLocations()
-        );
-
-        p.setBudgetMax(
-                person.getBudgetMax()
-        );
-
-        p.setPreferredActors(
-                person.getPreferredActors()
-        );
-
-        p.setPreferenceEmbedding(
-                person.getPreferenceEmbedding()
-        );
-
-        Person updated = personService.savePerson(p);
-
-        return ResponseEntity.ok(updated);
     }
 
-    // ===== SEARCH BY FIRSTNAME =====
+    // ================= PUBLIC =================
+
+    // GET BY ID
+    @GetMapping("/info/{id}")
+    public ResponseEntity<Person> getById(@PathVariable int id) {
+        return personService.findPersonById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    // ================= SEARCH =================
+
     @GetMapping("/firstname/{firstname}")
-    public ResponseEntity<List<Person>> findByFirstname(
-            @PathVariable String firstname) {
-
-        return ResponseEntity.ok(
-                personService.findByFirstname(firstname)
-        );
+    public List<Person> byFirstname(@PathVariable String firstname) {
+        return personService.findByFirstname(firstname);
     }
 
-    // ===== SEARCH BY LASTNAME =====
     @GetMapping("/lastname/{lastname}")
-    public ResponseEntity<List<Person>> findByLastname(
-            @PathVariable String lastname) {
-
-        return ResponseEntity.ok(
-                personService.findByLastname(lastname)
-        );
+    public List<Person> byLastname(@PathVariable String lastname) {
+        return personService.findByLastname(lastname);
     }
 
-    // ===== SEARCH BY CATEGORY =====
     @GetMapping("/category/{category}")
-    public ResponseEntity<List<Person>> findByCategory(
-            @PathVariable String category) {
-
-        return ResponseEntity.ok(
-                personService.findByPreferredCategories(category)
-        );
+    public List<Person> byCategory(@PathVariable String category) {
+        return personService.findByPreferredCategories(category);
     }
 
-    // ===== SEARCH BY LOCATION =====
     @GetMapping("/location/{location}")
-    public ResponseEntity<List<Person>> findByLocation(
-            @PathVariable String location) {
-
-        return ResponseEntity.ok(
-                personService.findByPreferredLocations(location)
-        );
+    public List<Person> byLocation(@PathVariable String location) {
+        return personService.findByPreferredLocations(location);
     }
 }

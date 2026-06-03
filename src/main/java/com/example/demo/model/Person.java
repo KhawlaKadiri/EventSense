@@ -7,6 +7,7 @@ import java.time.LocalDate;
 @Table(name = "users")
 public class Person {
 
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
@@ -34,8 +35,16 @@ public class Person {
     @Column(name = "preferred_actors")
     private String preferredActors;
 
-    @Column(name = "preference_embedding")
-    private String preferenceEmbedding;
+  
+
+    @Column(name = "role")
+private String role;
+@Column(name = "username", unique = true)
+private String username;
+
+// getter & setter
+public String getUsername() { return username; }
+public void setUsername(String username) { this.username = username; }
 
     // CONSTRUCTORS
 
@@ -49,8 +58,8 @@ public class Person {
                   String preferredCategories,
                   String preferredLocations,
                   Integer budgetMax,
-                  String preferredActors,
-                  String preferenceEmbedding) {
+                  String preferredActors
+                  ) {
 
         this.firstname = firstname;
         this.lastname = lastname;
@@ -60,10 +69,17 @@ public class Person {
         this.preferredLocations = preferredLocations;
         this.budgetMax = budgetMax;
         this.preferredActors = preferredActors;
-        this.preferenceEmbedding = preferenceEmbedding;
+        
     }
 
     // GETTERS & SETTERS
+    public String getRole() {
+    return role;
+}
+
+public void setRole(String role) {
+    this.role = role;
+}
 
     public int getId() {
         return id;
@@ -133,12 +149,5 @@ public class Person {
         this.preferredActors = preferredActors;
     }
 
-    public String getPreferenceEmbedding() {
-        return preferenceEmbedding;
-    }
-
-    
-    public void setPreferenceEmbedding(String preferenceEmbedding) {
-        this.preferenceEmbedding = preferenceEmbedding;
-    }
+   
 }

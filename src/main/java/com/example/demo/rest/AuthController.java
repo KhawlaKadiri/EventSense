@@ -1,18 +1,14 @@
 package com.example.demo.rest;
 
-
 import com.example.demo.eventsense.dto.LoginRequest;
 import com.example.demo.eventsense.dto.RegisterRequest;
 import com.example.demo.eventsense.repository.UserRepository;
-import com.example.demo.model.Role;
 import com.example.demo.model.Users;
 
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-
 
 import java.util.Map;
 
@@ -23,81 +19,96 @@ import java.util.Map;
 public class AuthController {
 
     private final UserRepository userRepository;
-
-    private final BCryptPasswordEncoder passwordEncoder =
-            new BCryptPasswordEncoder();
+    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     // ================= LOGIN =================
     @PostMapping("/login")
 public ResponseEntity<?> login(@RequestBody LoginRequest req) {
 
-    return userRepository.findByEmail(req.getEmail())
+    try {
+        return userRepository.findByEmail(req.getEmail())
+                .map(user -> {
 
-            .filter(user ->
-                    passwordEncoder.matches(
-                            req.getPassWord(),
-                            user.getPassWord()
-                    )
-            )
+                    if (user.getPassword() == null) {
+                        return ResponseEntity.status(401)
+                                .body("Password not set");
+                    }
 
-            .<ResponseEntity<?>>map(user -> {
+                    if (!passwordEncoder.matches(req.getPassWord(), user.getPassword())) {
+                        return ResponseEntity.status(401)
+                                .body("Invalid password");
+                    }
 
-                user.setPassWord(null);
+                    // hide password
+                    user.setPassword(null);
 
-                return ResponseEntity.ok(user);
-            })
+                    // ================= ROLE CHECK =================
+                    if ("ROLE_ADMIN".equals(user.getRole())) {
+                        return ResponseEntity.ok(
+                                Map.of(
+                                        "message", "Admin login successful",
+                                        "role", "ADMIN",
+                                        "user", user,
+                                        "redirect", "/admin-dashboard.html"
+                                )
+                        );
+                    }
 
-            .orElseGet(() ->
-                    ResponseEntity
-                            .status(401)
-                            .body("Invalid email or password")
-            );
+                    return ResponseEntity.ok(
+                            Map.of(
+                                    "message", "User login successful",
+                                    "role", "USER",
+                                    "user", user,
+                                    "redirect", "/user.html"
+                            )
+                    );
+                })
+                .orElse(
+                        ResponseEntity.status(401)
+                                .body("User not found")
+                );
+
+    } catch (Exception e) {
+        e.printStackTrace();
+        return ResponseEntity.status(500)
+                .body("Server error: " + e.getMessage());
+    }
+}
+
+@GetMapping("/encode/{password}")
+public String encode(@PathVariable String password) {
+    return passwordEncoder.encode(password);
 }
     // ================= REGISTER =================
     @PostMapping("/register")
-    public ResponseEntity<?> register(
-            @RequestBody RegisterRequest req
-    ) {
+    public ResponseEntity<?> register(@RequestBody RegisterRequest req) {
 
         if (userRepository.findByEmail(req.getEmail()).isPresent()) {
-
-            return ResponseEntity
-                    .badRequest()
+            return ResponseEntity.badRequest()
                     .body("Email already exists");
         }
 
-        Users user = Users.builder()
-                .firstname(req.getFirstname())
-                .lastname(req.getLastname())
-                .email(req.getEmail())
-                .passWord(
-                        passwordEncoder.encode(req.getPassWord())
-                )
-                .telephone(req.getTelephone())
-                .cin(req.getCin())
-                .role(Role.ROLE_USER)
-                .enabled(true)
-                .build();
+        Users user = new Users();
+        user.setFirstname(req.getFirstname());
+        user.setLastname(req.getLastname());
+        user.setEmail(req.getEmail());
+        user.setPassword(passwordEncoder.encode(req.getPassWord()));
+        user.setTelephone(req.getTelephone());
+        user.setCin(req.getCin());
+        user.setRole("ROLE_USER");
 
         userRepository.save(user);
 
         return ResponseEntity.ok(
-                Map.of(
-                        "message",
-                        "Registration successful"
-                )
+                Map.of("message", "Registration successful")
         );
     }
 
     // ================= LOGOUT =================
     @GetMapping("/logout")
     public ResponseEntity<?> logout() {
-
         return ResponseEntity.ok(
-                Map.of(
-                        "message",
-                        "Logged out successfully"
-                )
+                Map.of("message", "Logged out successfully")
         );
     }
 }
