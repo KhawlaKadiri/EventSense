@@ -43,7 +43,8 @@ public class EventService {
                 existingEvent.setEventDate(updatedEvent.getEventDate());
                 existingEvent.setDurationMinutes(updatedEvent.getDurationMinutes());
                 existingEvent.setPrice(updatedEvent.getPrice());
-
+               
+existingEvent.setImageUrl(updatedEvent.getImageUrl());
                 // ✅ NEW
                 existingEvent.setBudget(updatedEvent.getBudget());
                 existingEvent.setActors(updatedEvent.getActors());

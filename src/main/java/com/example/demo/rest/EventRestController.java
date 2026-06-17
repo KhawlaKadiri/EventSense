@@ -8,6 +8,7 @@ import com.example.demo.model.Person;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Optional;
@@ -71,6 +72,44 @@ public class EventRestController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+
+@PostMapping("/upload-image/{eventId}")
+public ResponseEntity<?> uploadImage(
+        @RequestParam int requesterId,
+        @PathVariable int eventId,
+        @RequestParam("file") MultipartFile file) {
+
+    Optional<Person> requester = personService.findPersonById(requesterId);
+    if (requester.isEmpty()) return ResponseEntity.status(404).body("Requester not found");
+    if (!"ROLE_ADMIN".equals(requester.get().getRole())) return ResponseEntity.status(403).body("Access denied");
+
+    try {
+        // Save file to uploads folder
+        String uploadDir = "uploads/events/";
+        java.nio.file.Path dirPath = java.nio.file.Paths.get(uploadDir);
+        if (!java.nio.file.Files.exists(dirPath)) {
+            java.nio.file.Files.createDirectories(dirPath);
+        }
+
+        String filename = eventId + "_" + System.currentTimeMillis() + "_" + file.getOriginalFilename();
+        java.nio.file.Path filePath = dirPath.resolve(filename);
+        java.nio.file.Files.copy(file.getInputStream(), filePath);
+
+        // Update event with URL
+        String imageUrl = "http://localhost:8091/uploads/events/" + filename;
+        Optional<Event> eventOpt = eventService.findEventById(eventId);
+        if (eventOpt.isPresent()) {
+            Event event = eventOpt.get();
+            event.setImageUrl(imageUrl);
+            eventService.saveEvent(event);
+            return ResponseEntity.ok(event);
+        }
+        return ResponseEntity.notFound().build();
+
+    } catch (Exception e) {
+        return ResponseEntity.status(500).body("Upload failed: " + e.getMessage());
+    }
+}
     // ================= PUBLIC =================
 
     // GET EVENT BY ID

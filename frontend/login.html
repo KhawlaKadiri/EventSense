@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Login | EventSense</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --crimson: #8b0000;
+  --crimson-light: #a00000;
+  --bg: #05080f;
+  --card: #0c1018;
+  --card2: #111827;
+  --border: rgba(255,255,255,0.07);
+  --border-red: rgba(139,0,0,0.35);
+  --text: #f0ede8;
+  --text-muted: #6a7a8a;
+  --gold: #c9a84c;
+}
+
+html, body { height: 100%; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* Ambient glow */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background:
+    radial-gradient(ellipse 60% 60% at 20% 20%, rgba(139,0,0,0.1) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 50% at 80% 80%, rgba(139,0,0,0.06) 0%, transparent 55%);
+  pointer-events: none; z-index: 0;
+}
+
+/* Floating dots background */
+.bg-dots {
+  position: fixed; inset: 0; z-index: 0; overflow: hidden;
+}
+.bg-dots span {
+  position: absolute; border-radius: 50%;
+  background: rgba(139,0,0,0.12);
+  animation: float linear infinite;
+}
+
+@keyframes float {
+  0%   { transform: translateY(100vh) scale(0); opacity: 0; }
+  10%  { opacity: 1; }
+  90%  { opacity: 0.5; }
+  100% { transform: translateY(-10vh) scale(1); opacity: 0; }
+}
+
+/* ===== MAIN CARD ===== */
+.login-container {
+  position: relative; z-index: 1;
+  display: grid; grid-template-columns: 320px 400px;
+  background: var(--card);
+  border: 1px solid var(--border-red);
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 40px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(139,0,0,0.1);
+  animation: slideUp 0.6s cubic-bezier(0.34, 1.2, 0.64, 1) both;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(30px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ===== LEFT PANEL ===== */
+.left-panel {
+  background: linear-gradient(160deg, #0d0208 0%, #1a0404 60%, #0d0208 100%);
+  padding: 3rem 2.5rem;
+  display: flex; flex-direction: column; justify-content: space-between;
+  position: relative; overflow: hidden;
+}
+
+/* decorative circle */
+.left-panel::before {
+  content: '';
+  position: absolute; top: -60px; right: -60px;
+  width: 220px; height: 220px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(139,0,0,0.2) 0%, transparent 70%);
+}
+.left-panel::after {
+  content: '';
+  position: absolute; bottom: -40px; left: -40px;
+  width: 150px; height: 150px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(139,0,0,0.1) 0%, transparent 70%);
+}
+
+.lp-brand {
+  position: relative; z-index: 1;
+}
+.lp-brand-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.8rem; font-weight: 700; color: var(--text);
+}
+.lp-brand-name span { color: var(--crimson); }
+.lp-brand-sub {
+  font-size: 0.65rem; letter-spacing: 0.3em; text-transform: uppercase;
+  color: var(--text-muted); margin-top: 4px;
+}
+
+.lp-middle { position: relative; z-index: 1; }
+
+.lp-headline {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.5rem; font-weight: 400; line-height: 1.3;
+  margin-bottom: 1rem;
+}
+.lp-headline em { font-style: italic; color: var(--gold); display: block; }
+
+.lp-features { display: flex; flex-direction: column; gap: 10px; }
+.lp-feature {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 0.78rem; color: var(--text-muted);
+}
+.lp-feature-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--crimson); flex-shrink: 0;
+}
+
+.lp-bottom {
+  position: relative; z-index: 1;
+  border-left: 2px solid var(--crimson); padding-left: 12px;
+}
+.lp-quote {
+  font-size: 0.75rem; color: var(--text-muted); line-height: 1.6; font-style: italic;
+}
+.lp-copy {
+  font-size: 0.62rem; letter-spacing: 0.15em; text-transform: uppercase;
+  color: rgba(255,255,255,0.15); margin-top: 8px;
+}
+
+/* ===== RIGHT PANEL — FORM ===== */
+.right-panel {
+  padding: 3rem;
+  display: flex; flex-direction: column; justify-content: center;
+  position: relative;
+}
+
+/* top red line */
+.right-panel::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, transparent, var(--crimson), transparent);
+}
+
+/* vertical separator */
+.right-panel::after {
+  content: ''; position: absolute; top: 10%; left: 0; bottom: 10%;
+  width: 1px;
+  background: linear-gradient(to bottom, transparent, var(--border-red), transparent);
+}
+
+.form-eyebrow {
+  font-size: 0.62rem; letter-spacing: 0.35em; text-transform: uppercase;
+  color: var(--crimson); margin-bottom: 6px;
+}
+.form-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.9rem; font-weight: 400; line-height: 1.1;
+  margin-bottom: 2rem;
+}
+.form-title em { font-style: italic; color: var(--gold); }
+
+/* ROLE SELECTOR */
+.role-tabs {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 1px; background: var(--border);
+  border: 1px solid var(--border); border-radius: 3px;
+  overflow: hidden; margin-bottom: 1.5rem;
+}
+.role-tab {
+  padding: 9px; text-align: center;
+  background: var(--card2); cursor: pointer;
+  font-size: 0.72rem; font-weight: 500; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--text-muted);
+  transition: all 0.2s; border: none; font-family: 'DM Sans', sans-serif;
+}
+.role-tab:hover { color: var(--text); }
+.role-tab.active { background: var(--crimson); color: #fff; }
+
+/* FIELDS */
+.field { margin-bottom: 1rem; }
+.field label {
+  display: block; font-size: 0.65rem; letter-spacing: 0.18em;
+  text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px;
+}
+
+.input-wrap { position: relative; }
+.input-wrap .input-icon {
+  position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+  color: var(--text-muted); font-size: 0.9rem; pointer-events: none;
+}
+.input-wrap input {
+  width: 100%; padding: 11px 12px 11px 36px;
+  background: var(--card2); border: 1px solid var(--border);
+  border-radius: 2px; color: var(--text);
+  font-family: 'DM Sans', sans-serif; font-size: 0.9rem;
+  outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+}
+.input-wrap input:focus {
+  border-color: var(--crimson);
+  box-shadow: 0 0 0 3px rgba(139,0,0,0.08);
+}
+.input-wrap input::placeholder { color: var(--text-muted); }
+
+/* PASSWORD TOGGLE */
+.pwd-toggle {
+  position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+  background: none; border: none; color: var(--text-muted); cursor: pointer;
+  font-size: 0.85rem; padding: 0; transition: color 0.2s;
+}
+.pwd-toggle:hover { color: var(--text); }
+
+/* SUBMIT */
+.submit-btn {
+  width: 100%; padding: 12px; margin-top: 0.5rem;
+  background: var(--crimson); border: none; border-radius: 2px;
+  color: #fff; font-family: 'DM Sans', sans-serif;
+  font-size: 0.8rem; font-weight: 500; letter-spacing: 0.2em;
+  text-transform: uppercase; cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+  position: relative; overflow: hidden;
+}
+.submit-btn:hover { background: var(--crimson-light); }
+.submit-btn:active { transform: scale(0.99); }
+.submit-btn:disabled { background: #222; color: var(--text-muted); cursor: default; }
+
+/* Loading shimmer on button */
+.submit-btn.loading::after {
+  content: '';
+  position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+  animation: shimmer 1s infinite;
+}
+@keyframes shimmer {
+  to { left: 100%; }
+}
+
+/* ERROR */
+.form-error {
+  margin-top: 0.8rem; text-align: center;
+  font-size: 0.78rem; color: #e05252; min-height: 18px;
+  animation: shake 0.3s ease;
+}
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25%       { transform: translateX(-4px); }
+  75%       { transform: translateX(4px); }
+}
+
+/* FOOTER LINK */
+.form-footer {
+  margin-top: 1.5rem; text-align: center;
+  font-size: 0.75rem; color: var(--text-muted);
+}
+.form-footer a {
+  color: var(--text-muted); text-decoration: none;
+  border-bottom: 1px solid var(--border-red); padding-bottom: 1px;
+  transition: color 0.2s;
+}
+.form-footer a:hover { color: var(--text); }
+
+@media (max-width: 760px) {
+  .login-container { grid-template-columns: 1fr; width: 90vw; max-width: 420px; }
+  .left-panel { display: none; }
+  .right-panel::after { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- Ambient floating dots -->
+<div class="bg-dots" id="bgDots"></div>
+
+<div class="login-container">
+
+  <!-- LEFT PANEL -->
+  <div class="left-panel">
+    <div class="lp-brand">
+      <div class="lp-brand-name">Event<span>Sense</span></div>
+      <div class="lp-brand-sub">Plateforme événementielle</div>
+    </div>
+
+    <div class="lp-middle">
+      <div class="lp-headline">
+        Votre prochain
+        <em>moment inoubliable</em>
+        commence ici.
+      </div>
+      <div class="lp-features">
+        <div class="lp-feature">
+          <div class="lp-feature-dot"></div>
+          Explorez des milliers d'événements
+        </div>
+        <div class="lp-feature">
+          <div class="lp-feature-dot"></div>
+          Réservation en quelques secondes
+        </div>
+        <div class="lp-feature">
+          <div class="lp-feature-dot"></div>
+          Recommandations personnalisées par IA
+        </div>
+      </div>
+    </div>
+
+    <div class="lp-bottom">
+      <div class="lp-quote">
+        "La culture, le sport, l'art — vivez-les pleinement."
+      </div>
+      <div class="lp-copy">EventSense © 2026</div>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="right-panel">
+    <div class="form-eyebrow">Bienvenue</div>
+    <div class="form-title">Se <em>connecter</em></div>
+
+    <!-- ROLE TABS -->
+    <div class="role-tabs">
+      <button class="role-tab active" id="tabUser" onclick="setRole('user')">👤 Utilisateur</button>
+      <button class="role-tab" id="tabAdmin" onclick="setRole('organizer')">🛡 Organisateur</button>
+    </div>
+
+    <!-- FORM -->
+    <div class="field">
+      <label>Adresse Email</label>
+      <div class="input-wrap">
+        <span class="input-icon">✉</span>
+        <input type="email" id="email" placeholder="vous@exemple.com" autocomplete="email">
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Mot de Passe</label>
+      <div class="input-wrap">
+        <span class="input-icon">🔒</span>
+        <input type="password" id="password" placeholder="••••••••" autocomplete="current-password" id="pwdInput">
+        <button class="pwd-toggle" onclick="togglePwd()" type="button" id="pwdToggle">👁</button>
+      </div>
+    </div>
+
+    <button class="submit-btn" id="submitBtn" onclick="doLogin()">
+      Connexion
+    </button>
+
+    <div class="form-error" id="formError"></div>
+
+    <div class="form-footer">
+      Pas encore de compte ?
+      <a href="Register.html">Créer un compte</a>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const API = 'http://localhost:8091/auth/login';
+
+// detect role from URL param
+const params       = new URLSearchParams(window.location.search);
+let selectedRole   = params.get('role') || 'user';
+
+// sync tabs with URL param
+if (selectedRole === 'organizer') {
+  document.getElementById('tabUser').classList.remove('active');
+  document.getElementById('tabAdmin').classList.add('active');
+}
+
+function setRole(role) {
+  selectedRole = role;
+  document.getElementById('tabUser').classList.toggle('active', role === 'user');
+  document.getElementById('tabAdmin').classList.toggle('active', role === 'organizer');
+}
+
+// keyboard submit
+document.getElementById('email').addEventListener('keydown',    e => { if (e.key === 'Enter') doLogin(); });
+document.getElementById('password').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+
+function togglePwd() {
+  const input  = document.getElementById('password');
+  const toggle = document.getElementById('pwdToggle');
+  if (input.type === 'password') { input.type = 'text'; toggle.textContent = '🙈'; }
+  else                           { input.type = 'password'; toggle.textContent = '👁'; }
+}
+
+async function doLogin() {
+  const email    = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  const errEl    = document.getElementById('formError');
+  const btn      = document.getElementById('submitBtn');
+
+  errEl.textContent = '';
+
+  if (!email || !password) { showErr('Veuillez remplir tous les champs'); return; }
+
+  btn.disabled    = true;
+  btn.textContent = 'Connexion…';
+  btn.classList.add('loading');
+
+  try {
+    const res  = await fetch(API, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ email, passWord: password })
+    });
+
+    const text = await res.text();
+    if (!res.ok) { showErr(text || 'Identifiants incorrects'); return; }
+
+    const response = JSON.parse(text);
+
+    // ✅ Save user to localStorage
+    localStorage.setItem('user', JSON.stringify(response.user));
+
+    // ✅ Role-based redirect
+    if (selectedRole === 'organizer' && response.role === 'ADMIN') {
+      // also save as adminUser for dashboard compatibility
+      localStorage.setItem('adminUser', JSON.stringify(response.user));
+      window.location.href = 'organisateur.html';
+
+    } else if (selectedRole === 'user' && response.role === 'USER') {
+      window.location.href = 'user.html';
+
+    } else if (response.role === 'ADMIN') {
+      // admin tried to log in as user — redirect to dashboard anyway
+      localStorage.setItem('adminUser', JSON.stringify(response.user));
+      window.location.href = 'organisateur.html';
+
+    } else {
+      showErr('Rôle non autorisé pour cet accès');
+    }
+
+  } catch(err) {
+    showErr('Erreur serveur — vérifiez votre connexion');
+  } finally {
+    btn.disabled    = false;
+    btn.textContent = 'Connexion';
+    btn.classList.remove('loading');
+  }
+}
+
+function showErr(msg) {
+  const el = document.getElementById('formError');
+  el.textContent = msg;
+  el.style.animation = 'none';
+  requestAnimationFrame(() => el.style.animation = '');
+}
+
+/* ===== AMBIENT DOTS ===== */
+const dotsWrap = document.getElementById('bgDots');
+for (let i = 0; i < 12; i++) {
+  const s    = document.createElement('span');
+  const size = 4 + Math.random() * 20;
+  s.style.cssText = `
+    width:${size}px; height:${size}px;
+    left:${Math.random()*100}%;
+    animation-duration:${8 + Math.random()*12}s;
+    animation-delay:${Math.random()*8}s;
+  `;
+  dotsWrap.appendChild(s);
+}
+</script>
+</body>
+</html>

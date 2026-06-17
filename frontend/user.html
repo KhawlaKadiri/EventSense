@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <title>User | EventSense</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: black;
+            color: #fff;
+        }
+
+        .image-slider {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100vh;
+            z-index: -2;
+        }
+
+        .image-slider img {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0;
+            transition: opacity 0.8s ease;
+        }
+
+        .image-slider img.active {
+            opacity: 1;
+        }
+
+        body::after {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(139,0,0,0.1) 100%);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .prev, .next {
+            position: fixed;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0,0,0,0.4);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: white;
+            padding: 14px;
+            cursor: pointer;
+            font-size: 18px;
+            border-radius: 50%;
+            z-index: 9999;
+            transition: all 0.3s ease;
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .prev:hover, .next:hover {
+            background: rgba(139,0,0,0.6);
+            border-color: #8b0000;
+        }
+
+        .prev { left: 25px; }
+        .next { right: 25px; }
+
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 15px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0,0,0,0.25);
+            backdrop-filter: blur(12px);
+            z-index: 1000;
+            transition: 0.4s;
+        }
+
+        nav.scrolled {
+            background: rgba(0,0,0,0.85);
+        }
+
+        nav h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        nav h1 span {
+            color: #8b0000;
+        }
+
+        nav a {
+            color: #ccc;
+            margin-left: 20px;
+            text-decoration: none;
+            transition: 0.3s;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        nav a:hover {
+            color: #8b0000;
+        }
+
+        main {
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding: 100px 60px 40px 40px;
+        }
+
+        .welcome {
+            position: absolute;
+            left: 60px;
+            top: 50%;
+            transform: translateY(-50%);
+            max-width: 450px;
+        }
+
+        .welcome-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 18px;
+            background: rgba(139,0,0,0.2);
+            border: 1px solid rgba(139,0,0,0.4);
+            border-radius: 50px;
+            font-size: 0.8rem;
+            color: #ff4444;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .welcome h2 {
+            font-size: 2.8rem;
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 15px;
+        }
+
+        .welcome h2 span {
+            color: #8b0000;
+        }
+
+        .welcome p {
+            color: #aaa;
+            font-size: 1rem;
+            line-height: 1.7;
+        }
+
+        .sidebar {
+            width: 340px;
+            background: rgba(0,0,0,0.55);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 24px;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.5);
+        }
+
+        .sidebar-header {
+            margin-bottom: 10px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .sidebar-header h2 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .sidebar-header h2 i {
+            color: #8b0000;
+            font-size: 1.1rem;
+        }
+
+        .sidebar-header p {
+            color: #888;
+            font-size: 0.85rem;
+            margin-top: 5px;
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 18px;
+            border-radius: 14px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .menu-item::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 3px;
+            background: linear-gradient(to bottom, #8b0000, transparent);
+            opacity: 0;
+            transition: 0.3s;
+        }
+
+        .menu-item:hover::before {
+            opacity: 1;
+        }
+
+        .menu-item:hover {
+            background: rgba(139,0,0,0.08);
+            border-color: rgba(139,0,0,0.3);
+            transform: translateX(-6px);
+        }
+
+        .menu-item:active {
+            transform: scale(0.98);
+        }
+
+        .menu-item i {
+            width: 42px;
+            height: 42px;
+            background: linear-gradient(135deg, rgba(139,0,0,0.2), rgba(139,0,0,0.05));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ff4444;
+            font-size: 1rem;
+            transition: 0.3s;
+        }
+
+        .menu-item:hover i {
+            background: linear-gradient(135deg, #8b0000, #5a0000);
+            color: white;
+        }
+
+        .menu-text {
+            flex: 1;
+        }
+
+        .menu-text h4 {
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+
+        .menu-text p {
+            font-size: 0.75rem;
+            color: #777;
+        }
+
+        .menu-arrow {
+            color: #555;
+            font-size: 0.8rem;
+            transition: 0.3s;
+        }
+
+        .menu-item:hover .menu-arrow {
+            color: #8b0000;
+            transform: translateX(4px);
+        }
+
+        .user-badge {
+            color: #8b0000;
+            font-size: 0.85rem;
+            margin-right: 12px;
+            font-weight: 600;
+        }
+
+        .logout-link {
+            color: #ff4444 !important;
+            font-weight: 600;
+        }
+
+        @media (max-width: 1024px) {
+            .welcome { display: none; }
+            main { justify-content: center; padding: 100px 20px 40px; }
+        }
+
+        @media (max-width: 768px) {
+            nav { padding: 15px 20px; }
+            nav a { margin-left: 12px; font-size: 0.8rem; }
+            .sidebar { width: 100%; max-width: 360px; }
+            .prev, .next { display: none; }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- IMAGE SLIDER -->
+    <div class="image-slider">
+        <img src="concert.jpg" class="slide active" alt="Concert">
+        <img src="classique.jpg" class="slide" alt="Classique">
+    </div>
+
+    <button class="prev">&#10094;</button>
+    <button class="next">&#10095;</button>
+
+    <!-- NAVBAR -->
+    <nav id="navbar">
+        <h1>Event<span>Sense</span></h1>
+        <div id="navLinks">
+            <a href="page.html">Home</a>
+            <a href="user.html">User</a>
+        </div>
+    </nav>
+
+    <main>
+        <div class="welcome">
+            <div class="welcome-tag">
+                <i class="fas fa-user"></i>
+                User Space
+            </div>
+            <h2>Discover Your<br><span>Next Experience</span></h2>
+            <p>Browse events, get AI-powered recommendations, and buy tickets in seconds — all tailored to your taste.</p>
+        </div>
+
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2><i class="fas fa-grip-vertical"></i> User Panel</h2>
+                <p>What would you like to do?</p>
+            </div>
+
+            <div class="menu-item" onclick="window.location.href='search.html'">
+                <i class="fas fa-search"></i>
+                <div class="menu-text">
+                    <h4>Explore Events</h4>
+                    <p>See all events & buy tickets</p>
+                </div>
+                <i class="fas fa-chevron-right menu-arrow"></i>
+            </div>
+
+            <div class="menu-item" onclick="window.location.href='Register.html'">
+                <i class="fas fa-user-plus"></i>
+                <div class="menu-text">
+                    <h4>Create Account</h4>
+                    <p>Join EventSense in seconds</p>
+                </div>
+                <i class="fas fa-chevron-right menu-arrow"></i>
+            </div>
+
+            <div class="menu-item" onclick="window.location.href='EventSenseAI.html'">
+                <i class="fas fa-wand-magic-sparkles"></i>
+                <div class="menu-text">
+                    <h4>Smart Recommendations</h4>
+                    <p>AI finds events perfect for you</p>
+                </div>
+                <i class="fas fa-chevron-right menu-arrow"></i>
+            </div>
+            
+        </div>
+    </main>
+
+<script>
+    // ========== SLIDER ==========
+    const slides = document.querySelectorAll('.slide');
+    const nextBtn = document.querySelector('.next');
+    const prevBtn = document.querySelector('.prev');
+    let index = 0;
+
+    nextBtn.onclick = () => {
+        slides[index].classList.remove('active');
+        index = (index + 1) % slides.length;
+        slides[index].classList.add('active');
+    };
+
+    prevBtn.onclick = () => {
+        slides[index].classList.remove('active');
+        index = (index - 1 + slides.length) % slides.length;
+        slides[index].classList.add('active');
+    };
+
+    window.addEventListener("scroll", () => {
+        const nav = document.getElementById("navbar");
+        if (window.scrollY > 50) {
+            nav.classList.add("scrolled");
+        } else {
+            nav.classList.remove("scrolled");
+        }
+    });
+
+    // ========== AUTH ==========
+    const navLinks = document.getElementById('navLinks');
+
+    function initUser() {
+        // Read user from login.html (key: "user")
+        const userData = localStorage.getItem('user');
+        
+        if (userData) {
+            const user = JSON.parse(userData);
+            renderLoggedIn(user);
+        } else {
+            // Not logged in — redirect to login
+            window.location.href = 'login.html?role=user';
+        }
+    }
+
+    function renderLoggedIn(user) {
+        navLinks.innerHTML = '';
+        
+        // User badge
+        const badge = document.createElement('span');
+        badge.className = 'user-badge';
+        badge.textContent = '👤 ' + (user.firstname || 'User');
+        navLinks.appendChild(badge);
+        
+        // Home link
+        const homeLink = document.createElement('a');
+        homeLink.href = 'page.html';
+        homeLink.textContent = 'Home';
+        navLinks.appendChild(homeLink);
+        
+        // User link
+        const userLink = document.createElement('a');
+        userLink.href = 'user.html';
+        userLink.textContent = 'User';
+        navLinks.appendChild(userLink);
+        
+        // Logout link
+        const logoutLink = document.createElement('a');
+        logoutLink.href = '#';
+        logoutLink.className = 'logout-link';
+        logoutLink.textContent = 'Logout';
+        logoutLink.onclick = function(e) {
+            e.preventDefault();
+            doLogout();
+        };
+        navLinks.appendChild(logoutLink);
+    }
+
+    function doLogout() {
+        localStorage.removeItem('user');
+        window.location.href = 'login.html?role=user';
+    }
+
+    // ========== INIT ==========
+    initUser();
+</script>
+
+</body>
+</html>

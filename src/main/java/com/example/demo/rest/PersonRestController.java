@@ -49,6 +49,65 @@ public class PersonRestController {
         return ResponseEntity.ok("User deleted");
     }
 
+       @PostMapping("/create")
+    public ResponseEntity<?> createUser(
+            @RequestParam int requesterId,
+            @RequestBody Person person
+    ) {
+        Optional<Person> requester = personService.findPersonById(requesterId);
+        if (requester.isEmpty())
+            return ResponseEntity.status(404).body("Requester not found");
+        if (!"ROLE_ADMIN".equals(requester.get().getRole()))
+            return ResponseEntity.status(403).body("Access denied: Admins only");
+
+        try {
+            Person saved = personService.savePerson(person);
+            return ResponseEntity.status(201).body(saved);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+@PostMapping("/auth/register")
+public ResponseEntity<?> register(@RequestBody Person person) {
+    try {
+        // Normalize role before saving
+        String role = person.getRole();
+        if (role == null || role.isEmpty() || "USER".equals(role)) {
+            person.setRole("ROLE_USER");
+        } else if ("ADMIN".equals(role)) {
+            person.setRole("ROLE_ADMIN");
+        }
+        
+        Person saved = personService.savePerson(person);
+        return ResponseEntity.status(201).body(saved);
+    } catch (RuntimeException e) {
+        return ResponseEntity.badRequest().body(e.getMessage());
+    }
+}
+
+      // UPDATE USER (ADMIN ONLY)
+    @PutMapping("/update/{id}")
+    public ResponseEntity<?> updateUser(
+            @PathVariable int id,
+            @RequestParam int requesterId,
+            @RequestBody Person updatedPerson
+    ) {
+        Optional<Person> requester = personService.findPersonById(requesterId);
+        if (requester.isEmpty())
+            return ResponseEntity.status(404).body("Requester not found");
+        if (!"ROLE_ADMIN".equals(requester.get().getRole()))
+            return ResponseEntity.status(403).body("Access denied: Admins only");
+
+        try {
+            return personService.updatePerson(id, updatedPerson)
+                    .map(ResponseEntity::ok)
+                    .orElseGet(() -> ResponseEntity.notFound().build());
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
     // ================= PUBLIC =================
 
     // GET BY ID

@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>EventSense | AI Assistant</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+    scroll-behavior: smooth;
+}
+
+body {
+    background: #000;
+    color: #fff;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* ===== NAVBAR ===== */
+nav {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    padding: 15px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(0,0,0,0.25);
+    backdrop-filter: blur(12px);
+    z-index: 1000;
+    transition: 0.4s;
+}
+
+nav.scrolled {
+    background: rgba(0,0,0,0.85);
+}
+
+nav h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+nav h1 span {
+    color: #8b0000;
+}
+
+nav a {
+    color: #ccc;
+    margin-left: 20px;
+    text-decoration: none;
+    transition: 0.3s;
+    font-size: 0.95rem;
+}
+
+nav a:hover {
+    color: #8b0000;
+}
+
+nav a.active {
+    color: #8b0000;
+    font-weight: 600;
+}
+
+/* ===== AUTH MODAL ===== */
+#authModal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+#authModal.hidden {
+    display: none;
+}
+
+.auth-modal {
+    background: linear-gradient(145deg, #111, #1b1b1b);
+    border: 1px solid rgba(139,0,0,0.3);
+    border-radius: 24px;
+    padding: 50px 45px;
+    max-width: 480px;
+    width: 90%;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    animation: modalAppear 0.5s ease;
+}
+
+@keyframes modalAppear {
+    from { opacity: 0; transform: scale(0.8); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.auth-modal::before {
+    content: "";
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(139,0,0,0.08) 0%, transparent 70%);
+    animation: rotate 25s linear infinite;
+}
+
+@keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.auth-modal > * {
+    position: relative;
+    z-index: 1;
+}
+
+.auth-modal .ai-icon {
+    width: 90px;
+    height: 90px;
+    background: linear-gradient(135deg, #8b0000, #5a0000);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 25px;
+    font-size: 2.5rem;
+    box-shadow: 0 10px 50px rgba(139,0,0,0.5);
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+.auth-modal h2 {
+    font-size: 2rem;
+    margin-bottom: 8px;
+}
+
+.auth-modal h2 span {
+    color: #8b0000;
+}
+
+.auth-modal .subtitle {
+    color: #888;
+    margin-bottom: 35px;
+    font-size: 0.95rem;
+}
+
+.auth-modal .input-group {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.auth-modal label {
+    display: block;
+    color: #aaa;
+    font-size: 0.85rem;
+    margin-bottom: 8px;
+    padding-left: 5px;
+}
+
+.auth-modal input[type="email"] {
+    width: 100%;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: #fff;
+    padding: 16px 22px;
+    border-radius: 14px;
+    font-size: 1rem;
+    outline: none;
+    transition: 0.3s;
+}
+
+.auth-modal input[type="email"]:focus {
+    border-color: #8b0000;
+    box-shadow: 0 0 20px rgba(139,0,0,0.2);
+}
+
+.auth-modal input[type="email"]::placeholder {
+    color: #555;
+}
+
+.auth-modal .btn-start {
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(90deg, #8b0000, #5a0000);
+    border: none;
+    color: white;
+    border-radius: 14px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s;
+    margin-bottom: 20px;
+}
+
+.auth-modal .btn-start:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 35px rgba(139,0,0,0.4);
+}
+
+.auth-modal .divider {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+    color: #555;
+    font-size: 0.85rem;
+}
+
+.auth-modal .divider::before,
+.auth-modal .divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: rgba(255,255,255,0.1);
+}
+
+.auth-modal .btn-guest {
+    width: 100%;
+    padding: 15px;
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.15);
+    color: #aaa;
+    border-radius: 14px;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.auth-modal .btn-guest:hover {
+    border-color: #8b0000;
+    color: #fff;
+    background: rgba(139,0,0,0.1);
+}
+
+.auth-modal .btn-guest i {
+    color: #8b0000;
+}
+
+/* ===== HIDE CHAT INITIALLY ===== */
+.chat-hidden {
+    display: none;
+}
+
+/* ===== AI HERO ===== */
+.ai-hero {
+    height: 40vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    background: linear-gradient(180deg, rgba(139,0,0,0.15) 0%, rgba(0,0,0,0) 100%);
+    padding-top: 80px;
+    position: relative;
+}
+
+.ai-hero::before {
+    content: "";
+    position: absolute;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(139,0,0,0.3) 0%, transparent 70%);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    animation: pulse 4s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.5; }
+    50% { transform: translate(-50%, -50%) scale(1.2); opacity: 0.8; }
+}
+
+.ai-hero-content {
+    position: relative;
+    z-index: 2;
+}
+
+.ai-hero h2 {
+    font-size: 2.8rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.ai-hero h2 span {
+    color: #8b0000;
+    text-shadow: 0 0 20px rgba(139,0,0,0.5);
+}
+
+.ai-hero p {
+    color: #aaa;
+    font-size: 1.1rem;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+/* ===== CHAT CONTAINER ===== */
+.chat-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px 20px 120px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* ===== MESSAGE BUBBLES ===== */
+.message {
+    display: flex;
+    gap: 15px;
+    max-width: 80%;
+    animation: slideIn 0.4s ease;
+}
+
+@keyframes slideIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.message.user {
+    align-self: flex-end;
+    flex-direction: row-reverse;
+}
+
+.message.ai {
+    align-self: flex-start;
+}
+
+.avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+.message.user .avatar {
+    background: linear-gradient(135deg, #8b0000, #5a0000);
+}
+
+.message.ai .avatar {
+    background: linear-gradient(135deg, #1a1a1a, #333);
+    border: 1px solid rgba(139,0,0,0.3);
+}
+
+.bubble {
+    padding: 15px 20px;
+    border-radius: 20px;
+    line-height: 1.6;
+    font-size: 0.95rem;
+}
+
+.message.user .bubble {
+    background: linear-gradient(135deg, #8b0000, #5a0000);
+    color: white;
+    border-bottom-right-radius: 5px;
+}
+
+.message.ai .bubble {
+    background: linear-gradient(145deg, #111, #1b1b1b);
+    border: 1px solid rgba(255,255,255,0.08);
+    color: #eee;
+    border-bottom-left-radius: 5px;
+}
+
+.bubble .event-card {
+    background: rgba(139,0,0,0.1);
+    border: 1px solid rgba(139,0,0,0.3);
+    border-radius: 12px;
+    padding: 15px;
+    margin-top: 10px;
+}
+
+.bubble .event-card h4 {
+    color: #ff4444;
+    margin-bottom: 8px;
+    font-size: 1.1rem;
+}
+
+.bubble .event-card p {
+    color: #ccc;
+    font-size: 0.9rem;
+    margin: 4px 0;
+}
+
+/* ===== TYPING INDICATOR ===== */
+.typing {
+    display: flex;
+    gap: 6px;
+    padding: 20px;
+    align-items: center;
+}
+
+.typing span {
+    width: 8px;
+    height: 8px;
+    background: #8b0000;
+    border-radius: 50%;
+    animation: bounce 1.4s infinite ease-in-out both;
+}
+
+.typing span:nth-child(1) { animation-delay: -0.32s; }
+.typing span:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes bounce {
+    0%, 80%, 100% { transform: scale(0); }
+    40% { transform: scale(1); }
+}
+
+/* ===== QUICK ACTIONS ===== */
+.quick-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 20px;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.quick-btn {
+    background: linear-gradient(145deg, #111, #1b1b1b);
+    border: 1px solid rgba(139,0,0,0.3);
+    color: #ccc;
+    padding: 10px 20px;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: 0.3s;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.quick-btn:hover {
+    border-color: #8b0000;
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(139,0,0,0.2);
+}
+
+.quick-btn i {
+    color: #8b0000;
+}
+
+/* ===== INPUT AREA ===== */
+.input-area {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.95), rgba(0,0,0,0.8));
+    backdrop-filter: blur(20px);
+    padding: 20px 40px;
+    border-top: 1px solid rgba(139,0,0,0.2);
+    z-index: 100;
+}
+
+.input-wrapper {
+    max-width: 900px;
+    margin: 0 auto;
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.input-wrapper input {
+    flex: 1;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: #fff;
+    padding: 15px 25px;
+    border-radius: 30px;
+    font-size: 1rem;
+    outline: none;
+    transition: 0.3s;
+}
+
+.input-wrapper input:focus {
+    border-color: #8b0000;
+    box-shadow: 0 0 20px rgba(139,0,0,0.15);
+}
+
+.input-wrapper input::placeholder {
+    color: #666;
+}
+
+.send-btn {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #8b0000, #5a0000);
+    border: none;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    transition: 0.3s;
+    box-shadow: 0 5px 20px rgba(139,0,0,0.3);
+}
+
+.send-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 8px 30px rgba(139,0,0,0.5);
+}
+
+/* ===== USER BADGE ===== */
+.user-badge {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    background: linear-gradient(145deg, #111, #1b1b1b);
+    border: 1px solid rgba(139,0,0,0.3);
+    padding: 10px 20px;
+    border-radius: 25px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.9rem;
+    z-index: 100;
+    animation: slideDown 0.5s ease;
+}
+
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.user-badge i {
+    color: #8b0000;
+}
+
+.user-badge .logout {
+    color: #666;
+    cursor: pointer;
+    font-size: 0.8rem;
+    margin-left: 10px;
+}
+
+.user-badge .logout:hover {
+    color: #8b0000;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+    nav { padding: 15px 20px; }
+    nav a { margin-left: 12px; font-size: 0.85rem; }
+    .ai-hero h2 { font-size: 2rem; }
+    .chat-container { padding: 15px 15px 140px; }
+    .message { max-width: 90%; }
+    .input-area { padding: 15px 20px; }
+    .auth-modal { padding: 40px 25px; }
+    .user-badge { top: 70px; right: 10px; font-size: 0.8rem; }
+}
+
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #000;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #8b0000;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #a00000;
+}
+</style>
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<nav id="navbar">
+    <h1>Event<span>Sense</span></h1>
+    <div>
+        <a href="page.html">Home</a>
+        <a href="page.html#features">Features</a>
+        <a href="page.html#about">About</a>
+        <a href="register.html">Register</a>
+        <a href="login.html?role=user">User</a>
+        <a href="login.html?role=organizer">Organizer</a>
+        <a href="EventSenseAI.html" class="active">AI</a>
+    </div>
+</nav>
+
+<!-- AUTH MODAL -->
+<div id="authModal">
+    <div class="auth-modal">
+        <div class="ai-icon">
+            <i class="fas fa-robot"></i>
+        </div>
+        <h2>EventSense <span>AI</span></h2>
+        <p class="subtitle">Enter your email for personalized recommendations</p>
+        
+        <div class="input-group">
+            <label><i class="fas fa-envelope"></i> Email (optional)</label>
+            <input type="email" id="modalEmail" placeholder="your@email.com">
+        </div>
+        
+        <button class="btn-start" onclick="startChat()">
+            <i class="fas fa-comment-dots"></i> Start Chat
+        </button>
+        
+        <div class="divider">or</div>
+        
+        <button class="btn-guest" onclick="startAsGuest()">
+            <i class="fas fa-user-secret"></i> Continue as Guest
+        </button>
+    </div>
+</div>
+
+<!-- USER BADGE -->
+<div class="user-badge chat-hidden" id="userBadge">
+    <i class="fas fa-user-circle"></i>
+    <span id="userEmailDisplay">user@example.com</span>
+    <span class="logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i></span>
+</div>
+
+<!-- AI HERO -->
+<div class="ai-hero chat-hidden" id="chatHero">
+    <div class="ai-hero-content">
+        <h2>EventSense <span>AI</span></h2>
+        <p>Your personal event assistant. Discover concerts, festivals & more.</p>
+    </div>
+</div>
+
+<!-- CHAT CONTAINER -->
+<div class="chat-container chat-hidden" id="chatContainer">
+    <div class="message ai">
+        <div class="avatar"><i class="fas fa-robot"></i></div>
+        <div class="bubble" id="welcomeMsg">
+            Welcome! I'm your EventSense AI assistant. How can I help you find your next event?
+        </div>
+    </div>
+</div>
+
+<!-- QUICK ACTIONS -->
+<div class="quick-actions chat-hidden" id="quickActions">
+    <button class="quick-btn" onclick="sendQuick('Find me a concert in Casablanca')">
+        <i class="fas fa-music"></i> Concert Casablanca
+    </button>
+    <button class="quick-btn" onclick="sendQuick('Events for kids this weekend')">
+        <i class="fas fa-child"></i> Kids Events
+    </button>
+    <button class="quick-btn" onclick="sendQuick('What are my preferences?')">
+        <i class="fas fa-user"></i> My Preferences
+    </button>
+    <button class="quick-btn" onclick="sendQuick('How do I buy tickets?')">
+        <i class="fas fa-ticket"></i> Buy Tickets
+    </button>
+    <button class="quick-btn" onclick="sendQuick('Jazz events under 200 MAD')">
+        <i class="fas fa-filter"></i> Jazz & Budget
+    </button>
+</div>
+
+<!-- INPUT AREA -->
+<div class="input-area chat-hidden" id="inputArea">
+    <div class="input-wrapper">
+        <input type="text" id="userInput" placeholder="Ask me anything..." onkeypress="handleKeyPress(event)">
+        <button class="send-btn" onclick="sendMessage()">
+            <i class="fas fa-paper-plane"></i>
+        </button>
+    </div>
+</div>
+
+<script>
+// ===== CONFIG =====
+const API_URL = 'http://localhost:8091/api/chat';
+let USER_EMAIL = null;
+let IS_GUEST = false;
+
+// ===== CHECK SESSION ON LOAD =====
+window.addEventListener('load', () => {
+    const loginUser = localStorage.getItem('user');
+    const savedEmail = localStorage.getItem('eventsense_email');
+    const savedGuest = localStorage.getItem('eventsense_guest');
+
+    if (loginUser) {
+        const user = JSON.parse(loginUser);
+        USER_EMAIL = user.email;
+        localStorage.setItem('eventsense_email', USER_EMAIL);
+        hideModal();
+        showChat();
+    } else if (savedEmail) {
+        USER_EMAIL = savedEmail;
+        hideModal();
+        showChat();
+    } else if (savedGuest === 'true') {
+        IS_GUEST = true;
+        hideModal();
+        showChat();
+    }
+});
+
+// ===== START CHAT =====
+function startChat() {
+    const email = document.getElementById('modalEmail').value.trim();
+    if (email && !isValidEmail(email)) {
+        alert('Please enter a valid email or leave empty for guest mode.');
+        return;
+    }
+    if (email) {
+        USER_EMAIL = email;
+        localStorage.setItem('eventsense_email', email);
+    } else {
+        IS_GUEST = true;
+        localStorage.setItem('eventsense_guest', 'true');
+    }
+    hideModal();
+    showChat();
+}
+
+// ===== START AS GUEST =====
+function startAsGuest() {
+    IS_GUEST = true;
+    localStorage.setItem('eventsense_guest', 'true');
+    hideModal();
+    showChat();
+}
+
+// ===== HIDE MODAL =====
+function hideModal() {
+    document.getElementById('authModal').classList.add('hidden');
+}
+
+// ===== SHOW CHAT =====
+function showChat() {
+    document.querySelectorAll('.chat-hidden').forEach(el => {
+        el.classList.remove('chat-hidden');
+    });
+    if (USER_EMAIL) {
+        document.getElementById('userBadge').style.display = 'flex';
+        document.getElementById('userEmailDisplay').textContent = USER_EMAIL;
+    }
+    const welcomeMsg = document.getElementById('welcomeMsg');
+    if (IS_GUEST) {
+        welcomeMsg.textContent = 'Welcome, Guest! I can help you discover events. For personalized recommendations, please sign in.';
+    } else if (USER_EMAIL) {
+        welcomeMsg.textContent = `Welcome back! I'm ready to find the perfect events for you, ${USER_EMAIL.split('@')[0]}.`;
+    }
+    document.getElementById('userInput').focus();
+}
+
+// ===== LOGOUT =====
+function logout() {
+    localStorage.removeItem('eventsense_email');
+    localStorage.removeItem('eventsense_guest');
+    localStorage.removeItem('user');
+    USER_EMAIL = null;
+    IS_GUEST = false;
+    location.reload();
+}
+
+// ===== VALIDATE EMAIL =====
+function isValidEmail(email) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+// ===== NAVBAR SCROLL =====
+window.addEventListener("scroll", () => {
+    const nav = document.getElementById("navbar");
+    if(window.scrollY > 80){
+        nav.classList.add("scrolled");
+    } else {
+        nav.classList.remove("scrolled");
+    }
+});
+
+// ===== SEND MESSAGE =====
+function sendMessage() {
+    const input = document.getElementById('userInput');
+    const message = input.value.trim();
+    if (!message) return;
+    
+    addMessage(message, 'user');
+    input.value = '';
+    
+    showTyping();
+    
+    const payload = { userMessage: message };
+    if (USER_EMAIL && !IS_GUEST) {
+        payload.userEmail = USER_EMAIL;
+    }
+    
+    fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    })
+    .then(res => res.json())
+    .then(data => {
+        hideTyping();
+        addMessage(data.response, 'ai', data.intent === 'consult-event-list');
+    })
+    .catch(err => {
+        hideTyping();
+        addMessage('Sorry, I had trouble connecting. Please try again.', 'ai');
+    });
+}
+
+// ===== QUICK SEND =====
+function sendQuick(text) {
+    document.getElementById('userInput').value = text;
+    sendMessage();
+}
+
+// ===== ADD MESSAGE =====
+function addMessage(text, sender, isEvent = false) {
+    const container = document.getElementById('chatContainer');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${sender}`;
+    
+    const avatar = document.createElement('div');
+    avatar.className = 'avatar';
+    avatar.innerHTML = sender === 'user' ? '<i class="fas fa-user"></i>' : '<i class="fas fa-robot"></i>';
+    
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble';
+    
+    if (isEvent && text.includes('Event #')) {
+        bubble.innerHTML = formatEventCard(text);
+    } else {
+        bubble.textContent = text;
+    }
+    
+    messageDiv.appendChild(avatar);
+    messageDiv.appendChild(bubble);
+    container.appendChild(messageDiv);
+    container.scrollTop = container.scrollHeight;
+}
+
+// ===== FORMAT EVENT CARD =====
+function formatEventCard(text) {
+    const idMatch = text.match(/Event #(\d+)/);
+    const titleMatch = text.match(/titled "([^"]+)"/);
+    const priceMatch = text.match(/(\d+)\s*MAD/i);
+    
+    let html = `<div style="margin-bottom:10px;">${text}</div>`;
+    
+    if (idMatch && titleMatch) {
+        const eventId = idMatch[1];
+        const eventTitle = titleMatch[1];
+        const eventPrice = priceMatch ? priceMatch[1] : '0';
+        
+        html += `
+            <div class="event-card">
+                <h4><i class="fas fa-calendar-star"></i> ${eventTitle}</h4>
+                <p><i class="fas fa-ticket"></i> Event ID: ${eventId}</p>
+                ${priceMatch ? `<p><i class="fas fa-tag"></i> ${eventPrice} MAD</p>` : ''}
+                <button onclick="bookEvent(${eventId}, '${eventTitle.replace(/'/g, "\\'")}', ${eventPrice})" style="background:#8b0000;color:white;border:none;padding:8px 16px;border-radius:8px;cursor:pointer;margin-top:8px;">
+                    <i class="fas fa-shopping-cart"></i> Book Now
+                </button>
+            </div>
+        `;
+    }
+    return html;
+}
+
+// ===== BOOK EVENT =====
+function bookEvent(eventId, eventTitle, eventPrice) {
+    if (IS_GUEST) {
+        if (confirm('Please sign in to book tickets. Would you like to sign in now?')) {
+            logout();
+        }
+        return;
+    }
+    
+    fetch(`http://localhost:8091/rest/events/${eventId}`)
+        .then(res => res.ok ? res.json() : Promise.reject())
+        .then(event => {
+            let pending = JSON.parse(localStorage.getItem('eventsense_pending_bookings') || '[]');
+            pending.push(event);
+            localStorage.setItem('eventsense_pending_bookings', JSON.stringify(pending));
+            if (confirm(`"${eventTitle}" added to cart. Go to Buy Tickets?`)) {
+                window.location.href = 'search.html';
+            }
+        })
+        .catch(() => {
+            let pending = JSON.parse(localStorage.getItem('eventsense_pending_bookings') || '[]');
+            pending.push({
+                id: parseInt(eventId),
+                title: eventTitle,
+                price: parseInt(eventPrice) || 0,
+                location: '—',
+                eventDate: null,
+                category: 'General',
+                actors: '',
+                availableSeats: 100
+            });
+            localStorage.setItem('eventsense_pending_bookings', JSON.stringify(pending));
+            if (confirm(`"${eventTitle}" added to cart. Go to Buy Tickets?`)) {
+                window.location.href = 'search.html';
+            }
+        });
+}
+
+// ===== TYPING INDICATOR =====
+function showTyping() {
+    const container = document.getElementById('chatContainer');
+    const typingDiv = document.createElement('div');
+    typingDiv.className = 'message ai';
+    typingDiv.id = 'typingIndicator';
+    typingDiv.innerHTML = `
+        <div class="avatar"><i class="fas fa-robot"></i></div>
+        <div class="bubble typing">
+            <span></span><span></span><span></span>
+        </div>
+    `;
+    container.appendChild(typingDiv);
+    container.scrollTop = container.scrollHeight;
+}
+
+function hideTyping() {
+    const typing = document.getElementById('typingIndicator');
+    if (typing) typing.remove();
+}
+
+// ===== HANDLE ENTER KEY =====
+function handleKeyPress(event) {
+    if (event.key === 'Enter') sendMessage();
+}
+</script>
+
+</body>
+</html>

@@ -3,6 +3,7 @@ package com.example.demo.model;
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 @Entity
 @Table(name = "events")
@@ -24,7 +25,8 @@ public class Event {
     @Column(length = 255)
     private String location;
 
-    @Column(name = "event_date", nullable = false)
+    @Column(name = "event_date")  // REMOVED nullable = false
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime eventDate;
 
     @Column(name = "duration_minutes")
@@ -33,7 +35,6 @@ public class Event {
     @Column(precision = 8, scale = 2)
     private BigDecimal price;
 
-    // ✅ NEW FIELD: budget
     @Column(precision = 10, scale = 2)
     private BigDecimal budget;
 
@@ -52,11 +53,8 @@ public class Event {
     @Column(name = "organizer_id")
     private Integer organizerId;
 
-    // ✅ NEW FIELD: actors
     @Column(columnDefinition = "TEXT")
     private String actors;
-
- 
 
     @Column(name = "created_at", insertable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -64,12 +62,15 @@ public class Event {
     @Column(name = "updated_at", insertable = false, updatable = false)
     private LocalDateTime updatedAt;
 
-   
+    @Column(name = "image_url")
+    private String imageUrl;
 
     public Event() {}
 
     // ===== GETTERS & SETTERS =====
 
+    public String getImageUrl() { return imageUrl; }
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
 
     public Integer getId() { return id; }
     public void setId(Integer id) { this.id = id; }
@@ -95,7 +96,6 @@ public class Event {
     public BigDecimal getPrice() { return price; }
     public void setPrice(BigDecimal price) { this.price = price; }
 
-    // ✅ NEW GETTER/SETTER
     public BigDecimal getBudget() { return budget; }
     public void setBudget(BigDecimal budget) { this.budget = budget; }
 
@@ -114,11 +114,8 @@ public class Event {
     public Integer getOrganizerId() { return organizerId; }
     public void setOrganizerId(Integer organizerId) { this.organizerId = organizerId; }
 
-    // ✅ NEW GETTERS/SETTERS
     public String getActors() { return actors; }
     public void setActors(String actors) { this.actors = actors; }
-
-    
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }

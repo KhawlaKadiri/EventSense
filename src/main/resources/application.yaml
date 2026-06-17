@@ -2,17 +2,11 @@ server:
   port: 8091
 
 spring:
-  # Database configuration
   datasource:
-    # if working with mysql change jdbc:postgresql to jdbc:mysql:
-    url: jdbc:postgresql://localhost:5432/EventSense?useSSL=false
-    username: postgres
-    password: Khawla
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://db:5432/EventSense}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:}
     driver-class-name: org.postgresql.Driver
-
-    # if you are using Mysql
-    # driver-class-name: com.mysql.jdbc.Driver
-
   jpa:
     hibernate:
       ddl-auto: update
@@ -22,11 +16,9 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
-        # dialect: org.hibernate.dialect.MySQL5Dialect
 logging:
   level:
     org.springframework.security: DEBUG
-
 
 groq:
   api:

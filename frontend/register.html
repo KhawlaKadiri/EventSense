@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Inscription | EventSense</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --crimson: #8b0000;
+  --crimson-light: #a00000;
+  --bg: #05080f;
+  --card: #0c1018;
+  --card2: #111827;
+  --border: rgba(255,255,255,0.07);
+  --border-red: rgba(139,0,0,0.35);
+  --text: #f0ede8;
+  --text-muted: #6a7a8a;
+  --gold: #c9a84c;
+}
+
+html, body { height: 100%; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow-x: hidden;
+  padding: 2rem 1rem;
+}
+
+/* Ambient glow */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background:
+    radial-gradient(ellipse 60% 60% at 20% 20%, rgba(139,0,0,0.1) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 50% at 80% 80%, rgba(139,0,0,0.06) 0%, transparent 55%);
+  pointer-events: none; z-index: 0;
+}
+
+.bg-dots { position: fixed; inset: 0; z-index: 0; overflow: hidden; }
+.bg-dots span {
+  position: absolute; border-radius: 50%;
+  background: rgba(139,0,0,0.12);
+  animation: float linear infinite;
+}
+@keyframes float {
+  0%   { transform: translateY(100vh) scale(0); opacity: 0; }
+  10%  { opacity: 1; }
+  90%  { opacity: 0.5; }
+  100% { transform: translateY(-10vh) scale(1); opacity: 0; }
+}
+
+/* ===== MAIN CARD ===== */
+.register-container {
+  position: relative; z-index: 1;
+  display: grid; grid-template-columns: 300px 460px;
+  background: var(--card);
+  border: 1px solid var(--border-red);
+  border-radius: 4px;
+  overflow: hidden;
+  max-width: 100%;
+  box-shadow: 0 40px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(139,0,0,0.1);
+  animation: slideUp 0.6s cubic-bezier(0.34, 1.2, 0.64, 1) both;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(30px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ===== LEFT PANEL ===== */
+.left-panel {
+  background: linear-gradient(160deg, #0d0208 0%, #1a0404 60%, #0d0208 100%);
+  padding: 3rem 2.2rem;
+  display: flex; flex-direction: column; justify-content: space-between;
+  position: relative; overflow: hidden;
+}
+
+.left-panel::before {
+  content: '';
+  position: absolute; top: -60px; right: -60px;
+  width: 220px; height: 220px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(139,0,0,0.2) 0%, transparent 70%);
+}
+.left-panel::after {
+  content: '';
+  position: absolute; bottom: -40px; left: -40px;
+  width: 150px; height: 150px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(139,0,0,0.1) 0%, transparent 70%);
+}
+
+.lp-brand { position: relative; z-index: 1; }
+.lp-brand-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.8rem; font-weight: 700; color: var(--text);
+}
+.lp-brand-name span { color: var(--crimson); }
+.lp-brand-sub {
+  font-size: 0.65rem; letter-spacing: 0.3em; text-transform: uppercase;
+  color: var(--text-muted); margin-top: 4px;
+}
+
+.lp-middle { position: relative; z-index: 1; }
+.lp-headline {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.4rem; font-weight: 400; line-height: 1.3;
+  margin-bottom: 1.2rem;
+}
+.lp-headline em { font-style: italic; color: var(--gold); display: block; }
+
+/* progress steps in left panel */
+.lp-steps { display: flex; flex-direction: column; gap: 14px; }
+.lp-step {
+  display: flex; align-items: center; gap: 12px;
+  font-size: 0.78rem; color: var(--text-muted);
+  transition: color 0.3s;
+}
+.lp-step-num {
+  width: 22px; height: 22px; border-radius: 50%;
+  border: 1px solid var(--border-red);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.68rem; font-weight: 500; color: var(--text-muted);
+  flex-shrink: 0; transition: all 0.3s;
+}
+.lp-step.active .lp-step-num {
+  background: var(--crimson); border-color: var(--crimson); color: #fff;
+}
+.lp-step.active { color: var(--text); }
+.lp-step.done .lp-step-num {
+  background: transparent; border-color: var(--gold); color: var(--gold);
+}
+.lp-step.done { color: var(--text-muted); }
+
+.lp-bottom {
+  position: relative; z-index: 1;
+  border-left: 2px solid var(--crimson); padding-left: 12px;
+}
+.lp-quote {
+  font-size: 0.74rem; color: var(--text-muted); line-height: 1.6; font-style: italic;
+}
+.lp-copy {
+  font-size: 0.62rem; letter-spacing: 0.15em; text-transform: uppercase;
+  color: rgba(255,255,255,0.15); margin-top: 8px;
+}
+
+/* ===== RIGHT PANEL — FORM ===== */
+.right-panel {
+  padding: 2.8rem 3rem;
+  display: flex; flex-direction: column; justify-content: center;
+  position: relative;
+}
+
+.right-panel::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, transparent, var(--crimson), transparent);
+}
+.right-panel::after {
+  content: ''; position: absolute; top: 8%; left: 0; bottom: 8%;
+  width: 1px;
+  background: linear-gradient(to bottom, transparent, var(--border-red), transparent);
+}
+
+.form-eyebrow {
+  font-size: 0.62rem; letter-spacing: 0.35em; text-transform: uppercase;
+  color: var(--crimson); margin-bottom: 6px;
+}
+.form-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.7rem; font-weight: 400; line-height: 1.1;
+  margin-bottom: 0.4rem;
+}
+.form-title em { font-style: italic; color: var(--gold); }
+.form-subtitle {
+  font-size: 0.78rem; color: var(--text-muted); margin-bottom: 1.6rem;
+}
+
+/* STEP PANELS */
+.step-panel { display: none; animation: fadeIn 0.35s ease both; }
+.step-panel.active { display: block; }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* FIELD GRID */
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.field { margin-bottom: 1rem; }
+.field label {
+  display: block; font-size: 0.65rem; letter-spacing: 0.18em;
+  text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px;
+}
+.field-hint {
+  font-size: 0.68rem; color: var(--text-muted); margin-top: 5px; line-height: 1.4;
+}
+
+.input-wrap { position: relative; }
+.input-wrap .input-icon {
+  position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+  color: var(--text-muted); font-size: 0.9rem; pointer-events: none;
+}
+.input-wrap input,
+.input-wrap select {
+  width: 100%; padding: 11px 12px 11px 36px;
+  background: var(--card2); border: 1px solid var(--border);
+  border-radius: 2px; color: var(--text);
+  font-family: 'DM Sans', sans-serif; font-size: 0.9rem;
+  outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+  appearance: none;
+}
+.input-wrap select {
+  cursor: pointer;
+}
+.input-wrap select option { background: var(--card2); color: var(--text); }
+.input-wrap input:focus,
+.input-wrap select:focus {
+  border-color: var(--crimson);
+  box-shadow: 0 0 0 3px rgba(139,0,0,0.08);
+}
+.input-wrap input::placeholder { color: var(--text-muted); }
+.input-wrap.select-wrap .input-icon { pointer-events: none; }
+.input-wrap.select-wrap::after {
+  content: '▾';
+  position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+  color: var(--text-muted); font-size: 0.7rem; pointer-events: none;
+}
+
+.pwd-toggle {
+  position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+  background: none; border: none; color: var(--text-muted); cursor: pointer;
+  font-size: 0.85rem; padding: 0; transition: color 0.2s;
+}
+.pwd-toggle:hover { color: var(--text); }
+
+/* CHIP SELECT (categories / actors) */
+.chip-field { margin-bottom: 1.1rem; }
+.chip-field label {
+  display: block; font-size: 0.65rem; letter-spacing: 0.18em;
+  text-transform: uppercase; color: var(--text-muted); margin-bottom: 9px;
+}
+.chip-group { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  padding: 7px 14px;
+  background: var(--card2); border: 1px solid var(--border);
+  border-radius: 20px; font-size: 0.78rem; color: var(--text-muted);
+  cursor: pointer; transition: all 0.2s; user-select: none;
+}
+.chip:hover { border-color: var(--border-red); color: var(--text); }
+.chip.selected {
+  background: rgba(139,0,0,0.18); border-color: var(--crimson); color: var(--text);
+}
+
+/* BUDGET SLIDER */
+.budget-row {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 9px;
+}
+.budget-value {
+  font-family: 'Playfair Display', serif; font-size: 1.1rem; color: var(--gold);
+}
+input[type="range"] {
+  width: 100%; -webkit-appearance: none; height: 3px;
+  background: var(--border); border-radius: 2px; outline: none;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%;
+  background: var(--crimson); cursor: pointer; box-shadow: 0 0 0 4px rgba(139,0,0,0.15);
+  transition: box-shadow 0.2s;
+}
+input[type="range"]::-webkit-slider-thumb:hover { box-shadow: 0 0 0 6px rgba(139,0,0,0.2); }
+input[type="range"]::-moz-range-thumb {
+  width: 16px; height: 16px; border-radius: 50%; border: none;
+  background: var(--crimson); cursor: pointer;
+}
+
+/* NAV BUTTONS */
+.btn-row { display: flex; gap: 10px; margin-top: 0.4rem; }
+.btn {
+  flex: 1; padding: 12px; border: none; border-radius: 2px;
+  font-family: 'DM Sans', sans-serif; font-size: 0.8rem; font-weight: 500;
+  letter-spacing: 0.2em; text-transform: uppercase; cursor: pointer;
+  transition: background 0.2s, transform 0.1s, border-color 0.2s, color 0.2s;
+}
+.btn-primary {
+  background: var(--crimson); color: #fff; position: relative; overflow: hidden;
+}
+.btn-primary:hover { background: var(--crimson-light); }
+.btn-primary:active { transform: scale(0.99); }
+.btn-primary:disabled { background: #222; color: var(--text-muted); cursor: default; }
+.btn-ghost {
+  background: transparent; border: 1px solid var(--border);
+  color: var(--text-muted); flex: 0 0 110px;
+}
+.btn-ghost:hover { color: var(--text); border-color: var(--border-red); }
+
+.btn-primary.loading::after {
+  content: '';
+  position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+  animation: shimmer 1s infinite;
+}
+@keyframes shimmer { to { left: 100%; } }
+
+.form-error {
+  margin-top: 0.8rem; text-align: center;
+  font-size: 0.78rem; color: #e05252; min-height: 18px;
+  animation: shake 0.3s ease;
+}
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+
+.form-footer {
+  margin-top: 1.5rem; text-align: center;
+  font-size: 0.75rem; color: var(--text-muted);
+}
+.form-footer a {
+  color: var(--text-muted); text-decoration: none;
+  border-bottom: 1px solid var(--border-red); padding-bottom: 1px;
+  transition: color 0.2s;
+}
+.form-footer a:hover { color: var(--text); }
+
+/* ===== SUCCESS OVERLAY ===== */
+.success-overlay {
+  position: fixed; inset: 0; z-index: 10;
+  background: rgba(5,8,15,0.92);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity 0.4s ease;
+}
+.success-overlay.show { opacity: 1; pointer-events: all; }
+.success-box {
+  text-align: center; max-width: 360px; padding: 2.5rem;
+  border: 1px solid var(--border-red); border-radius: 4px; background: var(--card);
+  transform: translateY(12px); transition: transform 0.4s ease;
+}
+.success-overlay.show .success-box { transform: translateY(0); }
+.success-icon {
+  width: 52px; height: 52px; margin: 0 auto 1.2rem;
+  border-radius: 50%; border: 1px solid var(--gold);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--gold); font-size: 1.3rem;
+}
+.success-box h3 {
+  font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 400;
+  margin-bottom: 0.6rem;
+}
+.success-box h3 em { font-style: italic; color: var(--gold); }
+.success-box p { font-size: 0.82rem; color: var(--text-muted); margin-bottom: 1.6rem; line-height: 1.5; }
+
+@media (max-width: 800px) {
+  .register-container { grid-template-columns: 1fr; width: 100%; max-width: 460px; }
+  .left-panel { display: none; }
+  .right-panel::after { display: none; }
+  .field-row { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="bg-dots" id="bgDots"></div>
+
+<div class="register-container">
+
+  <!-- LEFT PANEL -->
+  <div class="left-panel">
+    <div class="lp-brand">
+      <div class="lp-brand-name">Event<span>Sense</span></div>
+      <div class="lp-brand-sub">Plateforme événementielle</div>
+    </div>
+
+    <div class="lp-middle">
+      <div class="lp-headline">
+        Rejoignez une
+        <em>communauté curieuse</em>
+        d'événements.
+      </div>
+      <div class="lp-steps" id="lpSteps">
+        <div class="lp-step active" data-step="1">
+          <div class="lp-step-num">1</div>
+          Informations personnelles
+        </div>
+        <div class="lp-step" data-step="2">
+          <div class="lp-step-num">2</div>
+          Sécurité du compte
+        </div>
+        <div class="lp-step" data-step="3">
+          <div class="lp-step-num">3</div>
+          Préférences
+        </div>
+      </div>
+    </div>
+
+    <div class="lp-bottom">
+      <div class="lp-quote">
+        "La culture, le sport, l'art — vivez-les pleinement."
+      </div>
+      <div class="lp-copy">EventSense © 2026</div>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="right-panel">
+    <div class="form-eyebrow">Bienvenue</div>
+    <div class="form-title">Créer un <em>compte</em></div>
+    <div class="form-subtitle" id="stepSubtitle">Quelques informations pour commencer.</div>
+
+    <!-- STEP 1 — IDENTITY -->
+    <div class="step-panel active" id="step1">
+      <div class="field-row">
+        <div class="field">
+          <label>Prénom</label>
+          <div class="input-wrap">
+            <span class="input-icon">✦</span>
+            <input type="text" id="firstname" placeholder="Khawla">
+          </div>
+        </div>
+        <div class="field">
+          <label>Nom</label>
+          <div class="input-wrap">
+            <span class="input-icon">✦</span>
+            <input type="text" id="lastname" placeholder="Benali">
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Nom d'utilisateur</label>
+        <div class="input-wrap">
+          <span class="input-icon">@</span>
+          <input type="text" id="username" placeholder="khawla.b">
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label>Date de naissance</label>
+          <div class="input-wrap">
+            <span class="input-icon">✦</span>
+            <input type="date" id="birthdaydate">
+          </div>
+        </div>
+        <div class="field">
+          <label>CIN</label>
+          <div class="input-wrap">
+            <span class="input-icon">✦</span>
+            <input type="text" id="cin" placeholder="BE123456">
+          </div>
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label>Email</label>
+          <div class="input-wrap">
+            <span class="input-icon">✉</span>
+            <input type="email" id="email" placeholder="vous@exemple.com" autocomplete="email">
+          </div>
+        </div>
+        <div class="field">
+          <label>Téléphone</label>
+          <div class="input-wrap">
+            <span class="input-icon">☏</span>
+            <input type="text" id="telephone" placeholder="06 00 00 00 00">
+          </div>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="goToStep(2)">Continuer</button>
+      </div>
+    </div>
+
+    <!-- STEP 2 — SECURITY -->
+    <div class="step-panel" id="step2">
+      <div class="field">
+        <label>Mot de passe</label>
+        <div class="input-wrap">
+          <span class="input-icon">🔒</span>
+          <input type="password" id="password" placeholder="••••••••" autocomplete="new-password">
+          <button class="pwd-toggle" type="button" onclick="togglePwd('password', this)">👁</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Confirmer le mot de passe</label>
+        <div class="input-wrap">
+          <span class="input-icon">🔒</span>
+          <input type="password" id="passwordConfirm" placeholder="••••••••" autocomplete="new-password">
+          <button class="pwd-toggle" type="button" onclick="togglePwd('passwordConfirm', this)">👁</button>
+        </div>
+        <div class="field-hint">8 caractères minimum. Utilisez un mélange de lettres, chiffres et symboles.</div>
+      </div>
+
+      <div class="field">
+        <label>Rôle</label>
+        <div class="input-wrap select-wrap">
+          <span class="input-icon">🛡</span>
+          <select id="role">
+            <option value="USER">Utilisateur</option>
+            <option value="ADMIN">Organisateur</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-ghost" onclick="goToStep(1)">Retour</button>
+        <button class="btn btn-primary" onclick="goToStep(3)">Continuer</button>
+      </div>
+    </div>
+
+    <!-- STEP 3 — PREFERENCES -->
+    <div class="step-panel" id="step3">
+      <div class="chip-field">
+        <label>Catégories préférées</label>
+        <div class="chip-group" id="categoriesGroup">
+          <div class="chip" data-value="Musique">Musique</div>
+          <div class="chip" data-value="Théâtre">Théâtre</div>
+          <div class="chip" data-value="Sport">Sport</div>
+          <div class="chip" data-value="Art">Art</div>
+          <div class="chip" data-value="Cinéma">Cinéma</div>
+          <div class="chip" data-value="Gastronomie">Gastronomie</div>
+          <div class="chip" data-value="Conférences">Conférences</div>
+          <div class="chip" data-value="Festivals">Festivals</div>
+        </div>
+      </div>
+
+      <div class="chip-field">
+        <label>Villes préférées</label>
+        <div class="chip-group" id="locationsGroup">
+          <div class="chip" data-value="Casablanca">Casablanca</div>
+          <div class="chip" data-value="Rabat">Rabat</div>
+          <div class="chip" data-value="Marrakech">Marrakech</div>
+          <div class="chip" data-value="Tanger">Tanger</div>
+          <div class="chip" data-value="Fès">Fès</div>
+          <div class="chip" data-value="Agadir">Agadir</div>
+        </div>
+      </div>
+
+      <div class="field" style="margin-bottom: 1.1rem;">
+        <div class="budget-row">
+          <label style="margin-bottom:0;">Budget maximum</label>
+          <span class="budget-value" id="budgetValue">500 MAD</span>
+        </div>
+        <input type="range" id="budgetMax" min="0" max="5000" step="50" value="500" oninput="updateBudget(this.value)">
+      </div>
+
+      <div class="field">
+        <label>Artistes / intervenants favoris</label>
+        <div class="input-wrap" style="padding: 0;">
+          <span class="input-icon" style="left:12px;">✦</span>
+          <input type="text" id="preferredActors" placeholder="Séparés par une virgule">
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-ghost" onclick="goToStep(2)">Retour</button>
+        <button class="btn btn-primary" id="submitBtn" onclick="register()">Créer le compte</button>
+      </div>
+    </div>
+
+    <div class="form-error" id="formError"></div>
+
+    <div class="form-footer">
+      Déjà un compte ?
+      <a href="login.html">Se connecter</a>
+    </div>
+  </div>
+
+</div>
+
+<!-- SUCCESS OVERLAY -->
+<div class="success-overlay" id="successOverlay">
+  <div class="success-box">
+    <div class="success-icon">✓</div>
+    <h3>Compte <em>créé</em></h3>
+    <p>Votre profil EventSense est prêt. Vous pouvez maintenant vous connecter.</p>
+    <button class="btn btn-primary" style="width:100%;" onclick="goLogin()">Aller à la connexion</button>
+  </div>
+</div>
+
+<script>
+const API = "http://localhost:8091/rest/person/auth/register";
+
+let selectedCategories = [];
+let selectedLocations  = [];
+
+/* ===== STEP NAVIGATION ===== */
+const subtitles = {
+  1: "Quelques informations pour commencer.",
+  2: "Protégez votre compte avec un mot de passe sûr.",
+  3: "Aidez-nous à personnaliser vos recommandations."
+};
+
+function goToStep(step) {
+  if (step === 2 && !validateStep1()) return;
+  if (step === 3 && !validateStep2()) return;
+
+  document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('step' + step).classList.add('active');
+  document.getElementById('stepSubtitle').textContent = subtitles[step];
+  clearError();
+
+  document.querySelectorAll('.lp-step').forEach(el => {
+    const n = parseInt(el.dataset.step);
+    el.classList.remove('active', 'done');
+    if (n === step) el.classList.add('active');
+    else if (n < step) el.classList.add('done');
+  });
+}
+
+function validateStep1() {
+  const required = ['firstname', 'lastname', 'username', 'email'];
+  for (const id of required) {
+    if (!document.getElementById(id).value.trim()) {
+      showErr('Veuillez remplir tous les champs obligatoires');
+      return false;
+    }
+  }
+  return true;
+}
+
+function validateStep2() {
+  const pwd = document.getElementById('password').value;
+  const pwd2 = document.getElementById('passwordConfirm').value;
+  if (!pwd || pwd.length < 8) { showErr('Le mot de passe doit contenir au moins 8 caractères'); return false; }
+  if (pwd !== pwd2) { showErr('Les mots de passe ne correspondent pas'); return false; }
+  return true;
+}
+
+/* ===== CHIP SELECTION ===== */
+
+
+function setupChips(groupId, targetArray) {
+    document.querySelectorAll('#' + groupId + ' .chip').forEach(chip => {
+        chip.addEventListener('click', function() {
+            this.classList.toggle('selected');
+            const val = this.dataset.value;
+            const idx = targetArray.indexOf(val);
+            
+            if (this.classList.contains('selected')) {
+                if (idx === -1) targetArray.push(val);
+            } else {
+                if (idx !== -1) targetArray.splice(idx, 1);
+            }
+            
+            console.log(groupId + ":", targetArray); // debug
+        });
+    });
+}
+
+setupChips('categoriesGroup', selectedCategories);
+setupChips('locationsGroup', selectedLocations);
+/* ===== BUDGET SLIDER ===== */
+function updateBudget(val) {
+  document.getElementById('budgetValue').textContent = val + ' MAD';
+}
+
+/* ===== PASSWORD TOGGLE ===== */
+function togglePwd(id, btn) {
+  const input = document.getElementById(id);
+  if (input.type === 'password') { input.type = 'text'; btn.textContent = '🙈'; }
+  else { input.type = 'password'; btn.textContent = '👁'; }
+}
+
+/* ===== SUBMIT ===== */
+function register() {
+  if (!validateStep1() || !validateStep2()) return;
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.textContent = 'Création…';
+  btn.classList.add('loading');
+
+  console.log("selectedCategories:", selectedCategories);
+console.log("selectedLocations:", selectedLocations);
+
+  const data = {
+        firstname: document.getElementById("firstname").value.trim(),
+        lastname: document.getElementById("lastname").value.trim(),
+        username: document.getElementById("username").value.trim(),
+        birthdaydate: document.getElementById("birthdaydate").value || null,
+        cin: document.getElementById("cin").value.trim(),
+        email: document.getElementById("email").value.trim(),
+        telephone: document.getElementById("telephone").value.trim(),
+        password: document.getElementById("password").value,  
+        role: document.getElementById("role").value,
+        preferredCategories: selectedCategories.join(', '),
+        preferredLocations: selectedLocations.join(', '),
+        budgetMax: parseInt(document.getElementById("budgetMax").value, 10),
+        preferredActors: document.getElementById("preferredActors").value.trim()
+    };
+
+    // ADD THIS LINE TO DEBUG:
+    console.log("Sending JSON:", JSON.stringify(data, null, 2));
+
+  fetch(API, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data)
+  })
+  .then(async res => {
+    const text = await res.text();
+    if (!res.ok) throw new Error(text || "Inscription impossible");
+    return text;
+  })
+  .then(() => {
+    document.getElementById('successOverlay').classList.add('show');
+  })
+  .catch(err => {
+    showErr(err.message || "Erreur serveur — vérifiez votre connexion");
+  })
+  .finally(() => {
+    btn.disabled = false;
+    btn.textContent = 'Créer le compte';
+    btn.classList.remove('loading');
+  });
+}
+
+function goLogin() {
+  window.location.href = "login.html";
+}
+
+function showErr(msg) {
+  const el = document.getElementById('formError');
+  el.textContent = msg;
+  el.style.animation = 'none';
+  requestAnimationFrame(() => el.style.animation = '');
+}
+function clearError() {
+  document.getElementById('formError').textContent = '';
+}
+
+/* ===== AMBIENT DOTS ===== */
+const dotsWrap = document.getElementById('bgDots');
+for (let i = 0; i < 12; i++) {
+  const s = document.createElement('span');
+  const size = 4 + Math.random() * 20;
+  s.style.cssText = `
+    width:${size}px; height:${size}px;
+    left:${Math.random()*100}%;
+    animation-duration:${8 + Math.random()*12}s;
+    animation-delay:${Math.random()*8}s;
+  `;
+  dotsWrap.appendChild(s);
+}
+</script>
+</body>
+</html>

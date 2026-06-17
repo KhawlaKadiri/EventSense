@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Your Cart | EventSense</title>
+
+<style>
+body {
+    font-family: Arial;
+    background: #f5f5f5;
+    text-align: center;
+}
+
+h1 {
+    color: #d10000;
+    margin-top: 20px;
+}
+
+/* CART BOX */
+.cart-container {
+    width: 60%;
+    margin: auto;
+    background: white;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+}
+
+.item {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+/* BUTTONS */
+.btn {
+    padding: 10px 15px;
+    border: none;
+    cursor: pointer;
+    border-radius: 8px;
+    margin: 10px;
+}
+
+.red {
+    background: #d10000;
+    color: white;
+}
+
+.green {
+    background: green;
+    color: white;
+}
+</style>
+</head>
+
+<body>
+
+<h1>🛒 Your Tickets Cart</h1>
+
+<div class="cart-container" id="cartContainer"></div>
+
+<div>
+    <button class="btn red" onclick="clearCart()">Clear Cart</button>
+    <button class="btn green" onclick="goSearch()">Continue Buying</button>
+</div>
+
+<script>
+let cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+function loadCart() {
+    const container = document.getElementById("cartContainer");
+    container.innerHTML = "";
+
+    if (cart.length === 0) {
+        container.innerHTML = "<p>No tickets in cart 😢</p>";
+        return;
+    }
+
+    cart.forEach((item, index) => {
+        container.innerHTML += `
+            <div class="item">
+                <span>${item.name}</span>
+                <span>${item.price} MAD</span>
+                <button onclick="removeItem(${index})">❌</button>
+            </div>
+        `;
+    });
+}
+
+function removeItem(i) {
+    cart.splice(i, 1);
+    localStorage.setItem("cart", JSON.stringify(cart));
+    loadCart();
+}
+
+function clearCart() {
+    localStorage.removeItem("cart");
+    cart = [];
+    loadCart();
+}
+
+function goSearch() {
+    window.location.href = "search.html";
+}
+
+loadCart();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>EventSense | Gestion des Tickets</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --crimson: #8b0000;
+  --crimson-light: #a00000;
+  --crimson-dim: rgba(139,0,0,0.15);
+  --bg: #05080f;
+  --card: #0c1018;
+  --card2: #111827;
+  --border: rgba(255,255,255,0.07);
+  --border-red: rgba(139,0,0,0.35);
+  --text: #f0ede8;
+  --text-muted: #6a7a8a;
+  --gold: #c9a84c;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background:
+    radial-gradient(ellipse 70% 50% at 10% 0%, rgba(139,0,0,0.07) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 40% at 90% 100%, rgba(139,0,0,0.05) 0%, transparent 50%);
+  pointer-events: none; z-index: 0;
+}
+
+/* ===== NAVBAR ===== */
+nav {
+  position: fixed; top: 0; width: 100%; padding: 18px 40px;
+  display: flex; justify-content: space-between; align-items: center;
+  background: rgba(0,0,0,0.85); backdrop-filter: blur(12px);
+  z-index: 1000; border-bottom: 1px solid rgba(139,0,0,0.2);
+}
+nav h1 { font-size: 1.8rem; font-weight: 700; font-family: 'Playfair Display', serif; letter-spacing: 0.04em; }
+nav h1 span { color: var(--crimson); }
+.nav-links { display: flex; align-items: center; gap: 4px; }
+.nav-links a { color: #ccc; margin-left: 25px; text-decoration: none; font-weight: 500; font-size: 0.9rem; transition: color 0.2s; }
+.nav-links a:hover { color: var(--crimson); }
+.admin-badge { background: rgba(139,0,0,0.2); color: var(--crimson); padding: 6px 14px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; margin-left: 25px; }
+.nav-logout { background: none; border: none; color: #ccc; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; margin-left: 20px; transition: color 0.2s; }
+.nav-logout:hover { color: var(--crimson); }
+
+/* ===== LOGIN ===== */
+#loginScreen {
+  position: fixed; inset: 0; display: flex;
+  align-items: center; justify-content: center;
+  background: var(--bg); z-index: 500;
+}
+.login-box {
+  width: 420px; padding: 3rem;
+  background: var(--card); border: 1px solid var(--border-red);
+  border-radius: 4px; position: relative; overflow: hidden;
+}
+.login-box::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, transparent, var(--crimson), transparent);
+}
+.login-logo { text-align: center; margin-bottom: 2.5rem; }
+.login-logo .brand { font-family: 'Playfair Display', serif; font-size: 2rem; letter-spacing: 0.1em; }
+.login-logo .brand span { color: var(--crimson); }
+.login-logo .sub { font-size: 0.68rem; letter-spacing: 0.35em; text-transform: uppercase; color: var(--text-muted); margin-top: 4px; }
+.login-field { margin-bottom: 1.2rem; }
+.login-field label { display: block; font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px; }
+.login-field input {
+  width: 100%; padding: 12px 16px; background: var(--card2); border: 1px solid var(--border);
+  border-radius: 3px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.95rem; outline: none; transition: border-color 0.2s;
+}
+.login-field input:focus { border-color: var(--crimson); }
+.login-btn {
+  width: 100%; padding: 13px; margin-top: 0.5rem; background: var(--crimson); border: none; border-radius: 3px;
+  color: #fff; font-family: 'DM Sans', sans-serif; font-size: 0.82rem; font-weight: 500;
+  letter-spacing: 0.15em; text-transform: uppercase; cursor: pointer; transition: background 0.2s;
+}
+.login-btn:hover { background: var(--crimson-light); }
+.login-error { margin-top: 1rem; text-align: center; font-size: 0.82rem; color: #e05252; min-height: 20px; }
+
+/* ===== MAIN ===== */
+#app { display: none; position: relative; z-index: 1; }
+.main { padding: 110px 5% 80px; max-width: 1440px; margin: 0 auto; }
+
+/* PAGE HEADER */
+.page-header {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  margin-bottom: 3rem; padding-bottom: 2rem; border-bottom: 1px solid var(--border);
+}
+.page-eyebrow { font-size: 0.68rem; letter-spacing: 0.4em; text-transform: uppercase; color: var(--crimson); margin-bottom: 8px; }
+.page-title { font-family: 'Playfair Display', serif; font-size: 3rem; font-weight: 400; line-height: 1; }
+.page-title em { font-style: italic; color: var(--gold); }
+.header-right { display: flex; align-items: center; gap: 2rem; }
+.stat-strip { display: flex; gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 3px; overflow: hidden; }
+.stat-cell { padding: 10px 20px; background: var(--card); text-align: center; min-width: 80px; }
+.stat-cell .n { font-family: 'Playfair Display', serif; font-size: 1.5rem; color: var(--text); }
+.stat-cell .l { font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-muted); margin-top: 2px; }
+.add-btn {
+  padding: 11px 22px; background: var(--crimson); border: none; border-radius: 3px;
+  color: #fff; font-family: 'DM Sans', sans-serif; font-size: 0.78rem; font-weight: 500;
+  letter-spacing: 0.15em; text-transform: uppercase; cursor: pointer; transition: background 0.2s; white-space: nowrap;
+}
+.add-btn:hover { background: var(--crimson-light); }
+
+/* CONTROLS */
+.controls { display: flex; align-items: center; gap: 1rem; margin-bottom: 2.5rem; }
+.search-wrap { flex: 1; max-width: 480px; position: relative; }
+.search-wrap input {
+  width: 100%; padding: 10px 16px 10px 42px; background: var(--card); border: 1px solid var(--border);
+  border-radius: 3px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; outline: none; transition: border-color 0.2s;
+}
+.search-wrap input:focus { border-color: var(--crimson); }
+.search-wrap::before { content: '⌕'; position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 1.1rem; pointer-events: none; }
+
+.filter-btns { display: flex; gap: 6px; flex-wrap: wrap; }
+.filter-btn {
+  padding: 8px 16px; border: 1px solid var(--border); background: none; border-radius: 2px;
+  color: var(--text-muted); font-family: 'DM Sans', sans-serif; font-size: 0.72rem;
+  letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; transition: all 0.2s;
+}
+.filter-btn:hover, .filter-btn.active { border-color: var(--crimson); color: var(--text); }
+
+/* ===== TICKET CARDS GRID ===== */
+.tickets-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 2px; background: var(--border);
+  border: 1px solid var(--border); border-radius: 4px; overflow: hidden;
+}
+
+/* THE CARD — styled as a physical ticket */
+.ticket-card {
+  background: var(--card);
+  position: relative; overflow: hidden;
+  transition: background 0.25s;
+  animation: fadeUp 0.4s ease both;
+}
+.ticket-card:hover { background: #0f1825; }
+
+/* Left crimson accent */
+.ticket-card::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+  background: var(--crimson); transform: scaleY(0); transform-origin: bottom; transition: transform 0.3s ease;
+}
+.ticket-card:hover::before { transform: scaleY(1); }
+
+/* TICKET TOP — header area */
+.ticket-top {
+  padding: 1.2rem 1.5rem 1rem;
+  background: linear-gradient(135deg, #0a0f1a 0%, #0d0814 100%);
+  border-bottom: 1px dashed rgba(255,255,255,0.08);
+  display: flex; align-items: flex-start; justify-content: space-between;
+  position: relative;
+}
+
+.ticket-top::after {
+  content: '';
+  position: absolute; bottom: -8px; left: -8px;
+  width: 16px; height: 16px; border-radius: 50%;
+  background: var(--bg); border: 1px solid var(--border);
+  z-index: 2;
+}
+.ticket-top::before {
+  content: '';
+  position: absolute; bottom: -8px; right: -8px;
+  width: 16px; height: 16px; border-radius: 50%;
+  background: var(--bg); border: 1px solid var(--border);
+  z-index: 2;
+}
+
+.ticket-id-block {}
+.ticket-label {
+  font-size: 0.6rem; letter-spacing: 0.3em; text-transform: uppercase;
+  color: var(--text-muted); margin-bottom: 3px;
+}
+.ticket-number {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.4rem; color: var(--text);
+}
+
+.status-badge {
+  padding: 4px 12px; border-radius: 2px; font-size: 0.65rem;
+  font-weight: 500; letter-spacing: 0.15em; text-transform: uppercase;
+}
+.status-PAID    { background: rgba(45,106,45,0.25); color: #7dcf7d; border: 1px solid rgba(45,106,45,0.4); }
+.status-PENDING { background: rgba(201,168,76,0.15); color: var(--gold); border: 1px solid rgba(201,168,76,0.3); }
+.status-CANCELLED, .status-CANCELED {
+  background: rgba(139,0,0,0.2); color: #e06060; border: 1px solid var(--border-red);
+}
+.status-USED    { background: rgba(106,106,106,0.2); color: #888; border: 1px solid rgba(106,106,106,0.3); }
+
+/* TICKET BODY */
+.ticket-body {
+  padding: 1.2rem 1.5rem 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.ticket-row {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;
+}
+.ticket-row:last-child { margin-bottom: 0; }
+
+.t-field {}
+.t-field .tf-key {
+  font-size: 0.62rem; letter-spacing: 0.15em; text-transform: uppercase;
+  color: var(--text-muted); margin-bottom: 3px;
+}
+.t-field .tf-val {
+  font-size: 0.88rem; color: var(--text);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.t-field .tf-val.empty { color: rgba(255,255,255,0.15); font-style: italic; }
+.t-field .tf-val.highlight { color: var(--gold); font-family: 'Playfair Display', serif; font-size: 1rem; }
+
+/* SEAT display */
+.seat-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--crimson-dim); border: 1px solid var(--border-red);
+  padding: 4px 10px; border-radius: 2px;
+  font-size: 0.82rem; color: #e06060;
+  font-family: 'DM Sans', sans-serif; letter-spacing: 0.08em;
+}
+
+/* QR zone */
+.qr-strip {
+  padding: 0.6rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px;
+}
+.qr-icon {
+  width: 32px; height: 32px; flex-shrink: 0;
+  background: var(--card2); border: 1px solid var(--border);
+  border-radius: 2px; display: flex; align-items: center; justify-content: center;
+  font-size: 1rem;
+}
+.qr-text {
+  font-size: 0.72rem; color: var(--text-muted);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  max-width: 220px;
+}
+.qr-text.empty { color: rgba(255,255,255,0.12); font-style: italic; }
+
+/* TICKET FOOTER */
+.ticket-footer {
+  padding: 0.9rem 1.5rem;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.purchase-date { font-size: 0.72rem; color: var(--text-muted); }
+.purchase-date strong { color: var(--text); font-weight: 500; }
+.card-actions { display: flex; gap: 6px; }
+.act-btn {
+  width: 32px; height: 32px; border: 1px solid var(--border);
+  background: none; border-radius: 2px; color: var(--text-muted);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.85rem; cursor: pointer; transition: all 0.2s;
+}
+.act-btn:hover { border-color: var(--crimson); color: #e06060; }
+.act-btn.del:hover { border-color: #e05252; color: #e05252; }
+
+/* EMPTY */
+.empty-state { grid-column: 1 / -1; padding: 5rem; text-align: center; color: var(--text-muted); }
+.empty-state .big { font-family: 'Playfair Display', serif; font-size: 2rem; color: rgba(255,255,255,0.08); margin-bottom: 8px; }
+
+/* ===== MODAL ===== */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.8);
+  z-index: 2000; display: none; align-items: center; justify-content: center; padding: 2rem;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  width: 600px; max-width: 100%; max-height: 90vh; overflow-y: auto;
+  background: var(--card); border: 1px solid var(--border-red); border-radius: 4px; position: relative;
+}
+.modal::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, transparent, var(--crimson), transparent);
+}
+.modal-header {
+  padding: 1.5rem 2rem; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; background: var(--card); z-index: 1;
+}
+.modal-title { font-family: 'Playfair Display', serif; font-size: 1.25rem; font-weight: 400; }
+.modal-close { background: none; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer; line-height: 1; transition: color 0.2s; }
+.modal-close:hover { color: var(--text); }
+.modal-body { padding: 1.5rem 2rem 1rem; }
+.form-section {
+  font-size: 0.65rem; letter-spacing: 0.25em; text-transform: uppercase;
+  color: var(--crimson); margin: 1.2rem 0 0.8rem; padding-bottom: 6px;
+  border-bottom: 1px solid var(--border-red);
+}
+.form-section:first-child { margin-top: 0; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.form-field { display: flex; flex-direction: column; gap: 6px; }
+.form-field.full { grid-column: 1 / -1; }
+.form-field label { font-size: 0.67rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-muted); }
+.form-field input {
+  padding: 10px 12px; background: var(--card2); border: 1px solid var(--border);
+  border-radius: 3px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.9rem;
+  outline: none; transition: border-color 0.2s;
+}
+.form-field input:focus { border-color: var(--crimson); }
+.modal-footer {
+  padding: 1.2rem 2rem; border-top: 1px solid var(--border);
+  display: flex; gap: 0.75rem; justify-content: flex-end;
+  position: sticky; bottom: 0; background: var(--card); z-index: 1;
+}
+.btn-cancel {
+  padding: 9px 18px; background: none; border: 1px solid var(--border); border-radius: 3px;
+  color: var(--text-muted); font-family: 'DM Sans', sans-serif; font-size: 0.82rem; cursor: pointer; transition: all 0.2s;
+}
+.btn-cancel:hover { border-color: var(--text-muted); color: var(--text); }
+.btn-save {
+  padding: 9px 22px; background: var(--crimson); border: none; border-radius: 3px;
+  color: #fff; font-family: 'DM Sans', sans-serif; font-size: 0.82rem; font-weight: 500; cursor: pointer; transition: background 0.2s;
+}
+.btn-save:hover { background: var(--crimson-light); }
+
+/* TOAST */
+.toast {
+  position: fixed; bottom: 2rem; right: 2rem; padding: 12px 20px; border-radius: 3px;
+  font-size: 0.85rem; z-index: 9999; opacity: 0; transform: translateY(10px);
+  transition: all 0.3s; pointer-events: none;
+}
+.toast.show { opacity: 1; transform: translateY(0); }
+.toast.success { background: #1a3a1a; border: 1px solid #2d6a2d; color: #7dcf7d; }
+.toast.error   { background: #3a1a1a; border: 1px solid #6a2d2d; color: #cf7d7d; }
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--crimson); border-radius: 2px; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+</style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav>
+  <h1>Event<span>Sense</span></h1>
+  <div class="nav-links">
+    <a href="page.html">Accueil</a>
+    <span class="admin-badge">ADMIN</span>
+    <button class="nav-logout" onclick="doLogout()">Déconnexion</button>
+  </div>
+</nav>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="brand">Event<span>Sense</span></div>
+      <div class="sub">Espace Admin</div>
+    </div>
+    <div class="login-field">
+      <label>Admin ID</label>
+      <input type="number" id="loginId" placeholder="Entrez votre ID" min="1">
+    </div>
+    <button class="login-btn" onclick="doLogin()">Accéder au tableau de bord</button>
+    <div class="login-error" id="loginError"></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="main">
+
+    <div class="page-header">
+      <div class="page-title-block">
+        <div class="page-eyebrow">Gestion Admin</div>
+        <div class="page-title">Les <em>Tickets</em></div>
+      </div>
+      <div class="header-right">
+        <div class="stat-strip">
+          <div class="stat-cell">
+            <div class="n" id="statTotal">—</div>
+            <div class="l">Total</div>
+          </div>
+          <div class="stat-cell">
+            <div class="n" id="statPaid">—</div>
+            <div class="l">Payés</div>
+          </div>
+          <div class="stat-cell">
+            <div class="n" id="statRevenue">—</div>
+            <div class="l">Revenus</div>
+          </div>
+        </div>
+        <button class="add-btn" onclick="openModal()">+ Nouveau Ticket</button>
+      </div>
+    </div>
+
+    <div class="controls">
+      <div class="search-wrap">
+        <input type="text" id="searchInput" placeholder="Rechercher par event, user, siège…" oninput="filterCards()">
+      </div>
+      <div class="filter-btns" id="filterBtns">
+        <button class="filter-btn active" data-status="all" onclick="setStatusFilter(this,'all')">Tous</button>
+        <button class="filter-btn" data-status="PAID"      onclick="setStatusFilter(this,'PAID')">Payés</button>
+        <button class="filter-btn" data-status="PENDING"   onclick="setStatusFilter(this,'PENDING')">En attente</button>
+        <button class="filter-btn" data-status="CANCELLED" onclick="setStatusFilter(this,'CANCELLED')">Annulés</button>
+        <button class="filter-btn" data-status="USED"      onclick="setStatusFilter(this,'USED')">Utilisés</button>
+      </div>
+    </div>
+
+    <div class="tickets-grid" id="ticketsGrid">
+      <div class="empty-state"><div class="big">Chargement…</div></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">Nouveau Ticket</div>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="ticketId">
+
+      <div class="form-section">Liaison</div>
+      <div class="form-grid">
+        <div class="form-field"><label>Event ID</label><input type="number" id="eventId" placeholder="ID de l'événement"></div>
+        <div class="form-field"><label>User ID</label><input type="number" id="userId" placeholder="ID de l'utilisateur"></div>
+      </div>
+
+      <div class="form-section">Détails du billet</div>
+      <div class="form-grid">
+        <div class="form-field"><label>Numéro de siège</label><input type="text" id="seatNumber" placeholder="Ex: A12"></div>
+        <div class="form-field"><label>Statut</label><input type="text" id="status" placeholder="PAID / PENDING / USED"></div>
+        <div class="form-field"><label>Prix payé (MAD)</label><input type="number" id="pricePaid" placeholder="250"></div>
+        <div class="form-field full"><label>QR Code (optionnel)</label><input type="text" id="qrCode" placeholder="Code QR"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal()">Annuler</button>
+      <button class="btn-save" onclick="submitTicket()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+const API   = 'http://localhost:8091/rest/tickets';
+const API_P = 'http://localhost:8091/rest/person';
+let adminId     = null;
+let allTickets  = [];
+let statusFilter = 'all';
+
+/* ===== LOGIN ===== */
+function doLogin() {
+  const id = parseInt(document.getElementById('loginId').value);
+  if (!id) { loginErr('Veuillez entrer un ID'); return; }
+
+  fetch(`${API_P}/info/${id}`)
+    .then(r => { if (!r.ok) throw new Error(); return r.json(); })
+    .then(person => {
+      if (person.role !== 'ROLE_ADMIN') { loginErr('Accès refusé — admins uniquement'); return; }
+      adminId = id;
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('app').style.display = 'block';
+      loadTickets();
+    })
+    .catch(() => loginErr('ID invalide ou serveur non disponible'));
+}
+
+function loginErr(msg) {
+  const el = document.getElementById('loginError');
+  el.textContent = msg;
+  setTimeout(() => el.textContent = '', 3000);
+}
+
+document.getElementById('loginId').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+
+function doLogout() {
+  if (confirm('Se déconnecter ?')) window.location.href = 'page.html';
+}
+
+/* ===== LOAD ===== */
+async function loadTickets() {
+  try {
+    const res  = await fetch(`${API}/all?requesterId=${adminId}`);
+    if (!res.ok) throw new Error(await res.text());
+    const data = await res.json();
+    allTickets = data;
+    updateStats(data);
+    renderCards(data);
+  } catch(err) {
+    showToast('Erreur de chargement', 'error');
+  }
+}
+
+function updateStats(data) {
+  document.getElementById('statTotal').textContent  = data.length;
+  const paid = data.filter(t => t.status === 'PAID');
+  document.getElementById('statPaid').textContent   = paid.length;
+  const rev  = data.reduce((s, t) => s + (t.pricePaid || 0), 0);
+  document.getElementById('statRevenue').textContent = rev > 999 ? (rev/1000).toFixed(1)+'k' : rev;
+}
+
+/* ===== FILTER ===== */
+function setStatusFilter(btn, status) {
+  statusFilter = status;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  filterCards();
+}
+
+function filterCards() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  let filtered = allTickets;
+  if (statusFilter !== 'all') filtered = filtered.filter(t => t.status === statusFilter);
+  if (q) filtered = filtered.filter(t =>
+    String(t.eventId||'').includes(q) ||
+    String(t.userId||'').includes(q) ||
+    (t.seatNumber||'').toLowerCase().includes(q) ||
+    (t.userName||'').toLowerCase().includes(q)
+  );
+  renderCards(filtered);
+}
+
+/* ===== RENDER ===== */
+function formatDate(d) {
+  if (!d) return '—';
+  return new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+
+function statusClass(s) {
+  if (!s) return 'status-PENDING';
+  return 'status-' + s.toUpperCase();
+}
+
+function renderCards(tickets) {
+  const grid = document.getElementById('ticketsGrid');
+  if (!tickets.length) {
+    grid.innerHTML = `<div class="empty-state"><div class="big">Aucun ticket</div><p>Aucun résultat trouvé</p></div>`;
+    return;
+  }
+
+  grid.innerHTML = tickets.map((t, i) => `
+    <div class="ticket-card" style="animation-delay:${i * 0.04}s">
+
+      <div class="ticket-top">
+        <div class="ticket-id-block">
+          <div class="ticket-label">Ticket</div>
+          <div class="ticket-number">#${String(t.id).padStart(4,'0')}</div>
+        </div>
+        <div class="${statusClass(t.status)} status-badge">${t.status || 'PENDING'}</div>
+      </div>
+
+      <div class="ticket-body">
+        <div class="ticket-row">
+          <div class="t-field">
+            <div class="tf-key">Événement</div>
+            <div class="tf-val highlight">${t.eventId ? 'Event #' + t.eventId : '—'}</div>
+          </div>
+          <div class="t-field">
+            <div class="tf-key">Utilisateur</div>
+            <div class="tf-val">${t.userName || ('USER ' + (t.userId || '—'))}</div>
+          </div>
+        </div>
+        <div class="ticket-row">
+          <div class="t-field">
+            <div class="tf-key">Siège</div>
+            <div class="tf-val">
+              ${t.seatNumber
+                ? `<span class="seat-chip">💺 ${t.seatNumber}</span>`
+                : `<span class="tf-val empty">—</span>`}
+            </div>
+          </div>
+          <div class="t-field">
+            <div class="tf-key">Prix payé</div>
+            <div class="tf-val highlight">${t.pricePaid ? t.pricePaid + ' MAD' : '—'}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="qr-strip">
+        <div class="qr-icon">▦</div>
+        <div class="qr-text ${!t.qrCode ? 'empty' : ''}">${t.qrCode || 'Aucun QR code'}</div>
+      </div>
+
+      <div class="ticket-footer">
+        <div class="purchase-date">
+          ${t.purchaseDate ? '<strong>' + formatDate(t.purchaseDate) + '</strong>' : '<span style="color:var(--text-muted)">—</span>'}
+        </div>
+        <div class="card-actions">
+          <button class="act-btn" onclick="editTicket(${t.id})" title="Modifier">✎</button>
+          <button class="act-btn del" onclick="deleteTicket(${t.id})" title="Supprimer">✕</button>
+        </div>
+      </div>
+
+    </div>
+  `).join('');
+}
+
+/* ===== MODAL ===== */
+function openModal(ticket = null) {
+  document.getElementById('modalTitle').textContent = ticket ? 'Modifier le Ticket' : 'Nouveau Ticket';
+  document.getElementById('ticketId').value   = ticket ? ticket.id : '';
+  document.getElementById('eventId').value    = ticket ? ticket.eventId || '' : '';
+  document.getElementById('userId').value     = ticket ? ticket.userId || '' : '';
+  document.getElementById('seatNumber').value = ticket ? ticket.seatNumber || '' : '';
+  document.getElementById('status').value     = ticket ? ticket.status || '' : 'PAID';
+  document.getElementById('pricePaid').value  = ticket ? ticket.pricePaid || '' : '';
+  document.getElementById('qrCode').value     = ticket ? ticket.qrCode || '' : '';
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('open');
+}
+
+async function editTicket(id) {
+  try {
+    const res = await fetch(`${API}/info/${id}?requesterId=${adminId}`);
+    if (!res.ok) throw new Error(await res.text());
+    const t = await res.json();
+    openModal(t);
+  } catch(err) {
+    showToast('Erreur lors du chargement', 'error');
+  }
+}
+
+/* ===== SAVE (CREATE / UPDATE) — preserving original logic ===== */
+async function submitTicket() {
+  try {
+    const id = document.getElementById('ticketId').value;
+
+    const data = {
+      eventId:    parseInt(document.getElementById('eventId').value),
+      userId:     parseInt(document.getElementById('userId').value),
+      seatNumber: document.getElementById('seatNumber').value,
+      status:     document.getElementById('status').value || 'PAID',
+      pricePaid:  parseFloat(document.getElementById('pricePaid').value || 0),
+      userName:   'USER' + document.getElementById('userId').value
+    };
+
+    const qr = document.getElementById('qrCode').value;
+    if (qr) data.qrCode = qr;
+
+    const url    = id ? `${API}/update/${id}?requesterId=${adminId}` : `${API}/create?requesterId=${adminId}`;
+    const method = id ? 'PUT' : 'POST';
+
+    const res  = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+    const text = await res.text();
+    if (!res.ok) throw new Error(text);
+
+    showToast(id ? 'Ticket modifié' : 'Ticket créé', 'success');
+    closeModal();
+    loadTickets();
+
+    localStorage.setItem('refreshTickets', Date.now());
+
+  } catch(err) {
+    showToast(err.message || 'Erreur de sauvegarde', 'error');
+  }
+}
+
+/* ===== DELETE ===== */
+async function deleteTicket(id) {
+  if (!confirm('Supprimer ce ticket ?')) return;
+  try {
+    const res = await fetch(`${API}/delete/${id}?requesterId=${adminId}`, { method: 'DELETE' });
+    if (!res.ok) throw new Error(await res.text());
+    showToast('Ticket supprimé', 'success');
+    loadTickets();
+  } catch(err) {
+    showToast(err.message || 'Erreur de suppression', 'error');
+  }
+}
+
+/* ===== AUTO REFRESH (preserved from original) ===== */
+setInterval(() => {
+  if (localStorage.getItem('refreshTickets')) {
+    loadTickets();
+    localStorage.removeItem('refreshTickets');
+  }
+}, 1000);
+
+/* ===== TOAST ===== */
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast ${type} show`;
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+document.getElementById('modalOverlay').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+</script>
+</body>
+</html>

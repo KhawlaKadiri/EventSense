@@ -1,0 +1,1060 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>EventSense | Gestion des Événements</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --crimson: #8b0000;
+  --crimson-light: #a00000;
+  --crimson-dim: rgba(139,0,0,0.15);
+  --crimson-glow: rgba(139,0,0,0.4);
+  --bg: #05080f;
+  --bg2: #0b1220;
+  --card: #0c1018;
+  --card2: #111827;
+  --border: rgba(255,255,255,0.07);
+  --border-red: rgba(139,0,0,0.35);
+  --text: #f0ede8;
+  --text-muted: #6a7a8a;
+  --gold: #c9a84c;
+  --gold-dim: rgba(201,168,76,0.15);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 70% 50% at 10% 0%, rgba(139,0,0,0.07) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 40% at 90% 100%, rgba(139,0,0,0.05) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ===== NAVBAR (preserved exactly) ===== */
+nav {
+  position: fixed; top: 0; width: 100%; padding: 18px 40px;
+  display: flex; justify-content: space-between; align-items: center;
+  background: rgba(0,0,0,0.85); backdrop-filter: blur(12px);
+  z-index: 1000; border-bottom: 1px solid rgba(139,0,0,0.2);
+}
+nav h1 { font-size: 1.8rem; font-weight: 700; font-family: 'Playfair Display', serif; letter-spacing: 0.04em; }
+nav h1 span { color: var(--crimson); }
+.nav-links { display: flex; align-items: center; gap: 4px; }
+.nav-links a { color: #ccc; margin-left: 25px; text-decoration: none; font-weight: 500; font-size: 0.9rem; transition: color 0.2s; }
+.nav-links a:hover { color: var(--crimson); }
+.admin-badge {
+  background: rgba(139,0,0,0.2); color: var(--crimson);
+  padding: 6px 14px; border-radius: 8px; font-size: 0.85rem; font-weight: 600;
+  margin-left: 25px;
+}
+.nav-logout {
+  background: none; border: none; color: #ccc; cursor: pointer;
+  font-family: 'DM Sans', sans-serif; font-size: 0.9rem;
+  margin-left: 20px; transition: color 0.2s;
+}
+.nav-logout:hover { color: var(--crimson); }
+
+/* ===== LOGIN ===== */
+#loginScreen {
+  position: fixed; inset: 0; display: flex; align-items: center;
+  justify-content: center; background: var(--bg); z-index: 500;
+}
+
+.login-box {
+  width: 420px; padding: 3rem;
+  background: var(--card);
+  border: 1px solid var(--border-red);
+  border-radius: 4px;
+  position: relative;
+  overflow: hidden;
+}
+
+.login-box::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, transparent, var(--crimson), transparent);
+}
+
+.login-logo { text-align: center; margin-bottom: 2.5rem; }
+.login-logo .brand {
+  font-family: 'Playfair Display', serif;
+  font-size: 2rem; letter-spacing: 0.1em;
+}
+.login-logo .brand span { color: var(--crimson); }
+.login-logo .sub {
+  font-size: 0.68rem; letter-spacing: 0.35em; text-transform: uppercase;
+  color: var(--text-muted); margin-top: 4px;
+}
+
+.login-field { margin-bottom: 1.2rem; }
+.login-field label {
+  display: block; font-size: 0.7rem; letter-spacing: 0.15em;
+  text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px;
+}
+.login-field input {
+  width: 100%; padding: 12px 16px;
+  background: var(--card2); border: 1px solid var(--border);
+  border-radius: 3px; color: var(--text);
+  font-family: 'DM Sans', sans-serif; font-size: 0.95rem;
+  outline: none; transition: border-color 0.2s;
+}
+.login-field input:focus { border-color: var(--crimson); }
+
+.login-btn {
+  width: 100%; padding: 13px; margin-top: 0.5rem;
+  background: var(--crimson); border: none; border-radius: 3px;
+  color: #fff; font-family: 'DM Sans', sans-serif;
+  font-size: 0.82rem; font-weight: 500; letter-spacing: 0.15em;
+  text-transform: uppercase; cursor: pointer; transition: background 0.2s;
+}
+.login-btn:hover { background: var(--crimson-light); }
+.login-error { margin-top: 1rem; text-align: center; font-size: 0.82rem; color: #e05252; min-height: 20px; }
+
+/* ===== MAIN ===== */
+#app { display: none; position: relative; z-index: 1; }
+
+.main {
+  padding: 110px 5% 80px;
+  max-width: 1440px;
+  margin: 0 auto;
+}
+
+/* PAGE HEADER */
+.page-header {
+  display: flex; align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 3rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.page-title-block {}
+.page-eyebrow {
+  font-size: 0.68rem; letter-spacing: 0.4em; text-transform: uppercase;
+  color: var(--crimson); margin-bottom: 8px;
+}
+.page-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 3rem; font-weight: 400; line-height: 1;
+  letter-spacing: -0.01em;
+}
+.page-title em { font-style: italic; color: var(--gold); }
+
+.header-right { display: flex; align-items: center; gap: 2rem; }
+
+.stat-strip {
+  display: flex; gap: 1px; background: var(--border);
+  border: 1px solid var(--border); border-radius: 3px; overflow: hidden;
+}
+.stat-cell {
+  padding: 10px 20px; background: var(--card); text-align: center; min-width: 80px;
+}
+.stat-cell .n {
+  font-family: 'Playfair Display', serif; font-size: 1.5rem; color: var(--text);
+}
+.stat-cell .l {
+  font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--text-muted); margin-top: 2px;
+}
+
+.add-event-btn {
+  padding: 11px 22px;
+  background: var(--crimson); border: none; border-radius: 3px;
+  color: #fff; font-family: 'DM Sans', sans-serif;
+  font-size: 0.78rem; font-weight: 500; letter-spacing: 0.15em;
+  text-transform: uppercase; cursor: pointer; transition: background 0.2s;
+  white-space: nowrap;
+}
+.add-event-btn:hover { background: var(--crimson-light); }
+
+/* CONTROLS */
+.controls {
+  display: flex; align-items: center; gap: 1rem; margin-bottom: 2.5rem;
+}
+
+.search-wrap { flex: 1; max-width: 480px; position: relative; }
+.search-wrap input {
+  width: 100%; padding: 10px 16px 10px 42px;
+  background: var(--card); border: 1px solid var(--border); border-radius: 3px;
+  color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.9rem;
+  outline: none; transition: border-color 0.2s;
+}
+.search-wrap input:focus { border-color: var(--crimson); }
+.search-wrap::before {
+  content: '⌕'; position: absolute; left: 14px; top: 50%;
+  transform: translateY(-50%); color: var(--text-muted); font-size: 1.1rem;
+  pointer-events: none;
+}
+
+.filter-btns { display: flex; gap: 6px; flex-wrap: wrap; }
+.filter-btn {
+  padding: 8px 16px; border: 1px solid var(--border);
+  background: none; border-radius: 2px; color: var(--text-muted);
+  font-family: 'DM Sans', sans-serif; font-size: 0.72rem;
+  letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer;
+  transition: all 0.2s;
+}
+.filter-btn:hover, .filter-btn.active { border-color: var(--crimson); color: var(--text); }
+
+/* ===== EVENT CARDS GRID ===== */
+.events-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 2px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+/* THE CARD */
+.event-card {
+  background: var(--card);
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  transition: background 0.25s;
+}
+
+.event-card:hover { background: #0f1825; }
+
+/* IMAGE ZONE */
+.card-image {
+  position: relative;
+  width: 100%;
+  height: 220px;
+  overflow: hidden;
+  background: var(--card2);
+}
+
+.card-image img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.5s ease;
+  opacity: 0.85;
+}
+
+.event-card:hover .card-image img { transform: scale(1.05); opacity: 1; }
+
+/* Placeholder when no image */
+.card-image .img-placeholder {
+  width: 100%; height: 100%;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 10px;
+  background: linear-gradient(135deg, var(--card2) 0%, #0a0f1a 100%);
+  color: var(--text-muted);
+}
+
+.img-placeholder .event-icon {
+  font-size: 3rem; opacity: 0.3;
+}
+
+.img-placeholder .upload-hint {
+  font-size: 0.68rem; letter-spacing: 0.15em; text-transform: uppercase;
+  opacity: 0.4;
+}
+
+/* Image upload button overlay */
+.img-upload-overlay {
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,0.55);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; transition: opacity 0.2s;
+}
+
+.event-card:hover .img-upload-overlay { opacity: 1; }
+
+.img-upload-btn {
+  padding: 8px 18px;
+  background: rgba(139,0,0,0.85); border: 1px solid var(--crimson);
+  color: #fff; font-family: 'DM Sans', sans-serif;
+  font-size: 0.72rem; font-weight: 500; letter-spacing: 0.12em;
+  text-transform: uppercase; border-radius: 2px; cursor: pointer;
+  transition: background 0.2s;
+}
+.img-upload-btn:hover { background: var(--crimson); }
+
+/* Hidden file input */
+.img-file-input { display: none; }
+
+/* Category ribbon */
+.card-ribbon {
+  position: absolute; top: 16px; left: 0;
+  padding: 5px 14px 5px 12px;
+  background: var(--crimson);
+  font-size: 0.62rem; font-weight: 500; letter-spacing: 0.18em;
+  text-transform: uppercase; color: #fff;
+  clip-path: polygon(0 0, 100% 0, 90% 100%, 0 100%);
+}
+
+/* Price badge */
+.card-price {
+  position: absolute; top: 12px; right: 12px;
+  background: rgba(5,8,15,0.85);
+  border: 1px solid var(--border-red);
+  padding: 5px 10px; border-radius: 2px;
+  font-family: 'Playfair Display', serif;
+  font-size: 0.95rem; color: var(--gold);
+}
+
+/* CARD BODY */
+.card-body {
+  padding: 1.25rem 1.5rem 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.card-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.2rem; font-weight: 400; line-height: 1.25;
+  margin-bottom: 4px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.card-subtitle {
+  font-size: 0.72rem; letter-spacing: 0.1em; color: var(--text-muted);
+  text-transform: uppercase; margin-bottom: 1rem;
+}
+
+.card-info-row {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+}
+
+.info-chip {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 0.78rem; color: var(--text-muted);
+}
+.info-chip .ic { font-size: 0.85rem; }
+.info-chip .iv { color: var(--text); }
+
+/* SEATS BAR */
+.seats-bar-wrap {
+  padding: 0.75rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.seats-label {
+  display: flex; justify-content: space-between;
+  font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--text-muted); margin-bottom: 5px;
+}
+
+.seats-track {
+  height: 3px; background: rgba(255,255,255,0.06); border-radius: 2px; overflow: hidden;
+}
+.seats-fill {
+  height: 100%; background: var(--crimson); border-radius: 2px;
+  transition: width 0.4s ease;
+}
+
+/* CARD FOOTER */
+.card-footer {
+  padding: 0.9rem 1.5rem;
+  display: flex; align-items: center; justify-content: space-between;
+}
+
+.card-date {
+  font-size: 0.75rem; color: var(--text-muted);
+}
+.card-date strong { color: var(--text); font-weight: 500; }
+
+.card-actions { display: flex; gap: 6px; }
+
+.act-btn {
+  width: 32px; height: 32px;
+  border: 1px solid var(--border); background: none;
+  border-radius: 2px; color: var(--text-muted);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.85rem; cursor: pointer; transition: all 0.2s;
+}
+.act-btn:hover { border-color: var(--crimson); color: #e06060; }
+.act-btn.del:hover { border-color: #e05252; color: #e05252; }
+
+/* LEFT ACCENT */
+.event-card::before {
+  content: '';
+  position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+  background: var(--crimson);
+  transform: scaleY(0); transform-origin: bottom;
+  transition: transform 0.3s ease;
+}
+.event-card:hover::before { transform: scaleY(1); }
+
+/* EMPTY */
+.empty-state {
+  grid-column: 1 / -1; padding: 5rem; text-align: center;
+  color: var(--text-muted);
+}
+.empty-state .big {
+  font-family: 'Playfair Display', serif;
+  font-size: 2rem; color: rgba(255,255,255,0.08);
+  margin-bottom: 8px;
+}
+
+/* ===== MODAL ===== */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.8);
+  z-index: 2000; display: none;
+  align-items: center; justify-content: center;
+  padding: 2rem;
+}
+.modal-overlay.open { display: flex; }
+
+.modal {
+  width: 680px; max-width: 100%;
+  max-height: 90vh; overflow-y: auto;
+  background: var(--card); border: 1px solid var(--border-red);
+  border-radius: 4px; position: relative;
+}
+.modal::before {
+  content: ''; position: absolute;
+  top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, transparent, var(--crimson), transparent);
+}
+
+.modal-header {
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; background: var(--card); z-index: 1;
+}
+.modal-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.25rem; font-weight: 400;
+}
+.modal-close {
+  background: none; border: none; color: var(--text-muted);
+  font-size: 1.5rem; cursor: pointer; line-height: 1; transition: color 0.2s;
+}
+.modal-close:hover { color: var(--text); }
+
+.modal-body { padding: 1.5rem 2rem 1rem; }
+
+.form-section {
+  font-size: 0.65rem; letter-spacing: 0.25em; text-transform: uppercase;
+  color: var(--crimson); margin: 1.2rem 0 0.8rem; padding-bottom: 6px;
+  border-bottom: 1px solid var(--border-red);
+}
+
+.form-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;
+}
+.form-field { display: flex; flex-direction: column; gap: 6px; }
+.form-field.full { grid-column: 1 / -1; }
+
+.form-field label {
+  font-size: 0.67rem; letter-spacing: 0.15em; text-transform: uppercase;
+  color: var(--text-muted);
+}
+.form-field input,
+.form-field textarea {
+  padding: 10px 12px;
+  background: var(--card2); border: 1px solid var(--border); border-radius: 3px;
+  color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.9rem;
+  outline: none; transition: border-color 0.2s;
+}
+.form-field input:focus,
+.form-field textarea:focus { border-color: var(--crimson); }
+.form-field textarea { resize: vertical; min-height: 80px; }
+
+.modal-footer {
+  padding: 1.2rem 2rem;
+  border-top: 1px solid var(--border);
+  display: flex; gap: 0.75rem; justify-content: flex-end;
+  position: sticky; bottom: 0; background: var(--card); z-index: 1;
+}
+.btn-cancel {
+  padding: 9px 18px; background: none; border: 1px solid var(--border);
+  border-radius: 3px; color: var(--text-muted);
+  font-family: 'DM Sans', sans-serif; font-size: 0.82rem; cursor: pointer; transition: all 0.2s;
+}
+.btn-cancel:hover { border-color: var(--text-muted); color: var(--text); }
+.btn-save {
+  padding: 9px 22px; background: var(--crimson); border: none; border-radius: 3px;
+  color: #fff; font-family: 'DM Sans', sans-serif; font-size: 0.82rem;
+  font-weight: 500; cursor: pointer; transition: background 0.2s;
+}
+.btn-save:hover { background: var(--crimson-light); }
+
+/* TOAST */
+.toast {
+  position: fixed; bottom: 2rem; right: 2rem;
+  padding: 12px 20px; border-radius: 3px;
+  font-size: 0.85rem; z-index: 9999;
+  opacity: 0; transform: translateY(10px); transition: all 0.3s;
+  pointer-events: none;
+}
+.toast.show { opacity: 1; transform: translateY(0); }
+.toast.success { background: #1a3a1a; border: 1px solid #2d6a2d; color: #7dcf7d; }
+.toast.error { background: #3a1a1a; border: 1px solid #6a2d2d; color: #cf7d7d; }
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--crimson); border-radius: 2px; }
+
+/* STAGGER ANIMATION */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.event-card { animation: fadeUp 0.4s ease both; }
+</style>
+</head>
+<body>
+
+<!-- NAVBAR (preserved) -->
+<nav>
+  <h1>Event<span>Sense</span></h1>
+  <div class="nav-links">
+    <a href="page.html">Accueil</a>
+    <span class="admin-badge">ADMIN</span>
+    <button class="nav-logout" onclick="doLogout()">Déconnexion</button>
+  </div>
+</nav>
+
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="brand">Event<span>Sense</span></div>
+      <div class="sub">Espace Admin</div>
+    </div>
+    <div class="login-field">
+      <label>Admin ID</label>
+      <input type="number" id="loginId" placeholder="Entrez votre ID" min="1">
+    </div>
+    <button class="login-btn" onclick="doLogin()">Accéder au tableau de bord</button>
+    <div class="login-error" id="loginError"></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="main">
+
+    <div class="page-header">
+      <div class="page-title-block">
+        <div class="page-eyebrow">Gestion Admin</div>
+        <div class="page-title">Les <em>Événements</em></div>
+      </div>
+      <div class="header-right">
+        <div class="stat-strip">
+          <div class="stat-cell">
+            <div class="n" id="statTotal">—</div>
+            <div class="l">Total</div>
+          </div>
+          <div class="stat-cell">
+            <div class="n" id="statCategories">—</div>
+            <div class="l">Catégories</div>
+          </div>
+          <div class="stat-cell">
+            <div class="n" id="statSeats">—</div>
+            <div class="l">Places dispo</div>
+          </div>
+        </div>
+        <button class="add-event-btn" onclick="openModal()">+ Nouvel Événement</button>
+      </div>
+    </div>
+
+    <div class="controls">
+      <div class="search-wrap">
+        <input type="text" id="searchInput" placeholder="Rechercher titre, catégorie, lieu…" oninput="filterCards()">
+      </div>
+      <div class="filter-btns" id="filterBtns">
+        <button class="filter-btn active" data-cat="all" onclick="setCatFilter(this,'all')">Tous</button>
+      </div>
+    </div>
+
+    <div class="events-grid" id="eventsGrid">
+      <div class="empty-state">
+        <div class="big">Chargement…</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">Ajouter un Événement</div>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="mId">
+
+      <div class="form-section">Informations principales</div>
+      <div class="form-grid">
+        <div class="form-field full"><label>Titre</label><input type="text" id="mTitle" placeholder="Nom de l'événement"></div>
+        <div class="form-field"><label>Catégorie</label><input type="text" id="mCategory" placeholder="Musique, Sport…"></div>
+        <div class="form-field"><label>Lieu</label><input type="text" id="mLocation" placeholder="Casablanca…"></div>
+        <div class="form-field"><label>Date & Heure</label><input type="datetime-local" id="mEventDate"></div>
+        <div class="form-field"><label>Durée (minutes)</label><input type="number" id="mDuration" placeholder="120"></div>
+        <div class="form-field full"><label>Description</label><textarea id="mDescription" placeholder="Décrivez l'événement…"></textarea></div>
+      </div>
+
+      <div class="form-section">Billetterie & Places</div>
+      <div class="form-grid">
+        <div class="form-field"><label>Prix (MAD)</label><input type="number" id="mPrice" placeholder="250"></div>
+        <div class="form-field"><label>Budget</label><input type="number" id="mBudget" placeholder="0"></div>
+        <div class="form-field"><label>Total Places</label><input type="number" id="mTotalSeats" placeholder="500"></div>
+        <div class="form-field"><label>Places Disponibles</label><input type="number" id="mAvailableSeats" placeholder="500"></div>
+        <div class="form-field"><label>Âge Min</label><input type="number" id="mAgeMin" placeholder="0"></div>
+        <div class="form-field"><label>Âge Max</label><input type="number" id="mAgeMax" placeholder="99"></div>
+        <div class="form-field full">
+  <label>Image</label>
+  <input type="file" id="mImageFile" accept="image/*" style="display:none" onchange="handleModalImagePreview(this)">
+  <button type="button" class="btn-cancel" style="width:100%; padding:10px; margin-bottom:6px;" onclick="document.getElementById('mImageFile').click()">📷 Choisir une image</button>
+  <div id="mImagePreview" style="display:none; margin-top:6px;">
+    <img id="mImagePreviewImg" style="max-width:100%; max-height:120px; border-radius:3px; border:1px solid var(--border);">
+  </div>
+  <input type="hidden" id="mImageUrl">
+</div>
+      </div>
+
+      <div class="form-section">Artistes & Organisateur</div>
+      <div class="form-grid">
+        <div class="form-field full"><label>Acteurs / Artistes</label><input type="text" id="mActors" placeholder="Artist1, Artist2…"></div>
+        <div class="form-field"><label>Organisateur ID</label><input type="number" id="mOrganizerId"></div>
+        <div class="form-field full"><label>Embedding</label><input type="text" id="mEmbedding" placeholder="Vecteur embedding"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal()">Annuler</button>
+      <button class="btn-save" onclick="saveEvent()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+const API     = 'http://localhost:8091/rest/events';
+const API_P   = 'http://localhost:8091/rest/person';
+let adminId   = null;
+let allEvents = [];
+let catFilter = 'all';
+const eventImages = {};
+
+/* ============ LOGIN ============ */
+function doLogin() {
+  const id = parseInt(document.getElementById('loginId').value);
+  if (!id) { loginErr('Veuillez entrer un ID'); return; }
+
+  fetch(`${API_P}/info/${id}`)
+    .then(r => { if (!r.ok) throw new Error(); return r.json(); })
+    .then(person => {
+      if (person.role !== 'ROLE_ADMIN') { loginErr('Accès refusé — admins uniquement'); return; }
+      adminId = id;
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('app').style.display = 'block';
+      loadEvents();
+    })
+    .catch(() => loginErr('ID invalide ou introuvable'));
+}
+
+function loginErr(msg) {
+  const el = document.getElementById('loginError');
+  el.textContent = msg;
+  setTimeout(() => el.textContent = '', 3000);
+}
+
+document.getElementById('loginId').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+
+function doLogout() {
+  if (confirm('Se déconnecter ?')) window.location.href = 'page.html';
+}
+
+/* ============ LOAD ============ */
+function loadEvents() {
+  fetch(`${API}/all`)
+    .then(r => r.json())
+    .then(data => {
+      allEvents = data;
+      updateStats(data);
+      buildCategoryFilters(data);
+      renderCards(data);
+    })
+    .catch(() => showToast('Erreur de chargement', 'error'));
+}
+
+function updateStats(data) {
+  document.getElementById('statTotal').textContent = data.length;
+  const cats = new Set(data.map(e => e.category).filter(Boolean));
+  document.getElementById('statCategories').textContent = cats.size;
+  const seats = data.reduce((s, e) => s + (e.availableSeats || 0), 0);
+  document.getElementById('statSeats').textContent = seats;
+}
+
+function buildCategoryFilters(data) {
+  const cats = [...new Set(data.map(e => e.category).filter(Boolean))];
+  const wrap = document.getElementById('filterBtns');
+  wrap.innerHTML = `<button class="filter-btn active" data-cat="all" onclick="setCatFilter(this,'all')">Tous</button>`;
+  cats.forEach(c => {
+    wrap.innerHTML += `<button class="filter-btn" data-cat="${c}" onclick="setCatFilter(this,'${c}')">${c}</button>`;
+  });
+}
+
+function setCatFilter(btn, cat) {
+  catFilter = cat;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  filterCards();
+}
+
+function filterCards() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  let filtered = allEvents;
+  if (catFilter !== 'all') filtered = filtered.filter(e => e.category === catFilter);
+  if (q) filtered = filtered.filter(e =>
+    (e.title||'').toLowerCase().includes(q) ||
+    (e.category||'').toLowerCase().includes(q) ||
+    (e.location||'').toLowerCase().includes(q)
+  );
+  renderCards(filtered);
+}
+
+/* ============ RENDER CARDS ============ */
+function categoryIcon(cat) {
+  if (!cat) return '🎟️';
+  const c = cat.toLowerCase();
+  if (c.includes('music') || c.includes('musique') || c.includes('concert')) return '🎵';
+  if (c.includes('sport') || c.includes('foot')) return '⚽';
+  if (c.includes('theatre') || c.includes('théâtre')) return '🎭';
+  if (c.includes('cinema') || c.includes('film')) return '🎬';
+  if (c.includes('art') || c.includes('expo')) return '🖼️';
+  if (c.includes('food') || c.includes('gastro')) return '🍽️';
+  return '🎟️';
+}
+
+function formatDate(dt) {
+  if (!dt) return '—';
+  const d = new Date(dt);
+  return d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+
+function seatsPercent(e) {
+  if (!e.totalSeats || e.totalSeats === 0) return 0;
+  return Math.round(((e.totalSeats - (e.availableSeats||0)) / e.totalSeats) * 100);
+}
+
+function renderCards(events) {
+  const grid = document.getElementById('eventsGrid');
+  if (!events.length) {
+    grid.innerHTML = `<div class="empty-state"><div class="big">Aucun événement</div><p>Créez votre premier événement</p></div>`;
+    return;
+  }
+
+  grid.innerHTML = events.map((e, i) => {
+    const pct = seatsPercent(e);
+    
+    const imgSrc = eventImages[e.id] || e.imageUrl;
+    const imgHtml = imgSrc
+      ? `<img src="${imgSrc}" alt="${e.title}">`
+      : `<div class="img-placeholder">
+           <div class="event-icon">${categoryIcon(e.category)}</div>
+           <div class="upload-hint">Ajouter une image</div>
+         </div>`;
+
+    return `
+    <div class="event-card" style="animation-delay:${i * 0.05}s">
+      <div class="card-image">
+        ${imgHtml}
+        <div class="img-upload-overlay">
+          <button class="img-upload-btn" onclick="triggerImageUpload(${e.id}, event)">📷 Choisir une image</button>
+        </div>
+        <input type="file" accept="image/*" class="img-file-input" id="fileInput-${e.id}"
+               onchange="handleImageUpload(${e.id}, this)">
+        ${e.category ? `<div class="card-ribbon">${e.category}</div>` : ''}
+        ${e.price ? `<div class="card-price">${e.price} MAD</div>` : ''}
+      </div>
+
+      <div class="card-body">
+        <div class="card-title">${e.title || 'Sans titre'}</div>
+        <div class="card-subtitle">#${e.id}${e.actors ? ' · ' + e.actors : ''}</div>
+        <div class="card-info-row">
+          <div class="info-chip"><span class="ic">📍</span><span class="iv">${e.location || '—'}</span></div>
+          <div class="info-chip"><span class="ic">⏱</span><span class="iv">${e.durationMinutes ? e.durationMinutes + ' min' : '—'}</span></div>
+          <div class="info-chip"><span class="ic">👤</span><span class="iv">${e.ageMin||0}–${e.ageMax||99} ans</span></div>
+          <div class="info-chip"><span class="ic">💺</span><span class="iv">${e.availableSeats||0} / ${e.totalSeats||0}</span></div>
+        </div>
+      </div>
+
+      <div class="seats-bar-wrap">
+        <div class="seats-label">
+          <span>Occupation</span>
+          <span>${pct}%</span>
+        </div>
+        <div class="seats-track">
+          <div class="seats-fill" style="width:${pct}%"></div>
+        </div>
+      </div>
+
+      <div class="card-footer">
+        <div class="card-date">${formatDate(e.eventDate)}</div>
+        <div class="card-actions">
+          <button class="act-btn" onclick="editEvent(${e.id})" title="Modifier">✎</button>
+          <button class="act-btn del" onclick="deleteEvent(${e.id})" title="Supprimer">✕</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ============ IMAGE UPLOAD (Card) ============ */
+function triggerImageUpload(eventId, ev) {
+  ev.stopPropagation();
+  document.getElementById(`fileInput-${eventId}`).click();
+}
+
+function handleImageUpload(eventId, input) {
+  const file = input.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(evt) {
+    eventImages[eventId] = evt.target.result;
+    filterCards();
+  };
+  reader.readAsDataURL(file);
+
+  const formData = new FormData();
+  formData.append('file', file);
+
+  fetch(`http://localhost:8091/rest/events/upload-image/${eventId}?requesterId=${adminId}`, {
+    method: 'POST',
+    body: formData
+  })
+  .then(r => {
+    if (!r.ok) throw new Error();
+    return r.json();
+  })
+  .then(() => {
+    showToast('Image mise à jour', 'success');
+    loadEvents();
+  })
+  .catch(() => {
+    showToast('Erreur lors de la mise à jour', 'error');
+  });
+}
+
+/* ============ MODAL IMAGE PREVIEW ============ */
+function handleModalImagePreview(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(evt) {
+    document.getElementById('mImagePreviewImg').src = evt.target.result;
+    document.getElementById('mImagePreview').style.display = 'block';
+    // ✅ store temporarily — will be replaced by real URL after upload
+    document.getElementById('mImageUrl').value = evt.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+/* ============ MODAL ============ */
+function openModal(ev = null) {
+  document.getElementById('modalTitle').textContent = ev ? "Modifier l'Événement" : "Ajouter un Événement";
+  document.getElementById('mId').value           = ev ? ev.id : '';
+  document.getElementById('mTitle').value        = ev ? ev.title || '' : '';
+  document.getElementById('mDescription').value  = ev ? ev.description || '' : '';
+  document.getElementById('mCategory').value     = ev ? ev.category || '' : '';
+  document.getElementById('mLocation').value     = ev ? ev.location || '' : '';
+  document.getElementById('mEventDate').value    = ev && ev.eventDate ? ev.eventDate.substring(0,16) : '';
+  document.getElementById('mDuration').value     = ev ? ev.durationMinutes || '' : '';
+  document.getElementById('mPrice').value        = ev ? ev.price || '' : '';
+  document.getElementById('mAgeMin').value       = ev ? ev.ageMin || '' : '';
+  document.getElementById('mAgeMax').value       = ev ? ev.ageMax || '' : '';
+  document.getElementById('mTotalSeats').value   = ev ? ev.totalSeats || '' : '';
+  document.getElementById('mAvailableSeats').value = ev ? ev.availableSeats || '' : '';
+  document.getElementById('mBudget').value       = ev ? ev.budget || '' : '';
+  document.getElementById('mActors').value       = ev ? ev.actors || '' : '';
+  document.getElementById('mEmbedding').value    = ev ? ev.embedding || '' : '';
+  document.getElementById('mOrganizerId').value  = ev ? ev.organizerId || '' : '';
+  
+  // Reset image fields
+  document.getElementById('mImageFile').value = '';
+  document.getElementById('mImagePreview').style.display = 'none';
+  document.getElementById('mImagePreviewImg').src = '';
+  document.getElementById('mImageUrl').value = ev ? ev.imageUrl || '' : '';
+  
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('open');
+}
+
+function editEvent(id) {
+  const ev = allEvents.find(e => e.id === id);
+  if (ev) openModal(ev);
+}
+
+
+/* ============ SAVE ============ */
+function saveEvent() {
+  const id = document.getElementById('mId').value;
+  
+  // Build event data carefully to match backend expectations
+  const rawEventDate = document.getElementById('mEventDate').value;
+  let eventDate = null;
+  if (rawEventDate) {
+    eventDate = rawEventDate; // datetime-local already outputs ISO-like format
+  }
+
+  const organizerIdVal = document.getElementById('mOrganizerId').value;
+  const organizerId = organizerIdVal ? parseInt(organizerIdVal) : 0;
+
+  const data = {
+    title:            document.getElementById('mTitle').value || '',
+    description:      document.getElementById('mDescription').value || '',
+    category:         document.getElementById('mCategory').value || '',
+    location:         document.getElementById('mLocation').value || '',
+    eventDate:        eventDate,
+    durationMinutes:  parseInt(document.getElementById('mDuration').value) || 0,
+    price:            parseFloat(document.getElementById('mPrice').value) || 0,
+    ageMin:           parseInt(document.getElementById('mAgeMin').value) || 0,
+    ageMax:           parseInt(document.getElementById('mAgeMax').value) || 0,
+    totalSeats:       parseInt(document.getElementById('mTotalSeats').value) || 0,
+    availableSeats:   parseInt(document.getElementById('mAvailableSeats').value) || 0,
+    budget:           parseFloat(document.getElementById('mBudget').value) || 0,
+    actors:           document.getElementById('mActors').value || '',
+    embedding:        document.getElementById('mEmbedding').value || '',
+    organizerId:      organizerId
+  };
+
+  // Only add imageUrl if it has a real value (not empty, not dataURL for create)
+  const imageUrlVal = document.getElementById('mImageUrl').value;
+  if (imageUrlVal && !imageUrlVal.startsWith('data:')) {
+    data.imageUrl = imageUrlVal;
+  }
+
+  console.log('Sending data:', JSON.stringify(data, null, 2));
+
+  const imageFile = document.getElementById('mImageFile').files[0];
+
+  if (id) {
+    // UPDATE existing event
+    const url = `${API}/update/${id}?requesterId=${adminId}`;
+    
+    fetch(url, { 
+      method: 'PUT', 
+      headers: { 'Content-Type': 'application/json' }, 
+      body: JSON.stringify(data) 
+    })
+    .then(async r => {
+      if (!r.ok) {
+        const text = await r.text();
+        console.error('Server error (update):', r.status, text);
+        throw new Error(text);
+      }
+      return r.json();
+    })
+    .then(() => {
+      if (imageFile) {
+        const formData = new FormData();
+        formData.append('file', imageFile);
+        return fetch(`http://localhost:8091/rest/events/upload-image/${id}?requesterId=${adminId}`, {
+          method: 'POST',
+          body: formData
+        });
+      }
+    })
+    .then(() => {
+      showToast('Événement modifié', 'success');
+      closeModal();
+      loadEvents();
+    })
+    .catch(err => {
+      console.error('Update failed:', err);
+      showToast('Erreur lors de la sauvegarde', 'error');
+    });
+    
+  } else {
+    // CREATE new event
+    const url = `${API}/create?requesterId=${adminId}`;
+    
+    fetch(url, { 
+      method: 'POST', 
+      headers: { 'Content-Type': 'application/json' }, 
+      body: JSON.stringify(data) 
+    })
+    .then(async r => {
+      if (!r.ok) {
+        const text = await r.text();
+        console.error('Server error (create):', r.status, text);
+        throw new Error(text);
+      }
+      return r.json();
+    })
+    .then(newEvent => {
+      console.log('Created event:', newEvent);
+      if (imageFile && newEvent && newEvent.id) {
+        const formData = new FormData();
+        formData.append('file', imageFile);
+        return fetch(`http://localhost:8091/rest/events/upload-image/${newEvent.id}?requesterId=${adminId}`, {
+          method: 'POST',
+          body: formData
+        }).then(() => newEvent.id);
+      }
+      return newEvent ? newEvent.id : null;
+    })
+    .then(() => {
+      showToast('Événement créé', 'success');
+      closeModal();
+      loadEvents();
+    })
+    .catch(err => {
+      console.error('Create failed:', err);
+      showToast('Erreur lors de la sauvegarde', 'error');
+    });
+  }
+}
+
+/* ============ DELETE ============ */
+function deleteEvent(id) {
+  if (!confirm('Supprimer cet événement ?')) return;
+  fetch(`${API}/delete/${id}?requesterId=${adminId}`, { method: 'DELETE' })
+    .then(r => { if (!r.ok) throw new Error(); })
+    .then(() => { delete eventImages[id]; showToast('Événement supprimé', 'success'); loadEvents(); })
+    .catch(() => showToast('Erreur de suppression', 'error'));
+}
+
+/* ============ TOAST ============ */
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast ${type} show`;
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+/* Close modal on overlay click */
+document.getElementById('modalOverlay').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+</script>
+</body>
+</html>

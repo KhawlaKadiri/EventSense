@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>EventSense | Admin Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --crimson: #8b0000;
+  --crimson-light: #a00000;
+  --crimson-dim: rgba(139,0,0,0.15);
+  --bg: #05080f;
+  --card: #0c1018;
+  --card2: #111827;
+  --border: rgba(255,255,255,0.07);
+  --border-red: rgba(139,0,0,0.35);
+  --text: #f0ede8;
+  --text-muted: #6a7a8a;
+  --gold: #c9a84c;
+  --green: #2d8a2d;
+  --green-dim: rgba(45,138,45,0.15);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background:
+    radial-gradient(ellipse 70% 50% at 10% 0%, rgba(139,0,0,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 40% at 90% 100%, rgba(139,0,0,0.05) 0%, transparent 50%);
+  pointer-events: none; z-index: 0;
+}
+
+/* ===== NAVBAR ===== */
+nav {
+  position: fixed; top: 0; width: 100%; padding: 18px 40px;
+  display: flex; justify-content: space-between; align-items: center;
+  background: rgba(0,0,0,0.85); backdrop-filter: blur(12px);
+  z-index: 1000; border-bottom: 1px solid rgba(139,0,0,0.2);
+}
+.nav-brand { font-family: 'Playfair Display', serif; font-size: 1.8rem; font-weight: 700; }
+.nav-brand span { color: var(--crimson); }
+.nav-right { display: flex; align-items: center; gap: 16px; }
+.nav-admin-info { display: flex; align-items: center; gap: 10px; }
+.nav-avatar {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: var(--crimson-dim); border: 1px solid var(--border-red);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Playfair Display', serif; font-size: 0.9rem; color: #e06060;
+}
+.nav-name { font-size: 0.85rem; color: var(--text-muted); }
+.nav-name strong { color: var(--text); display: block; }
+.admin-badge {
+  background: rgba(139,0,0,0.2); color: var(--crimson);
+  padding: 5px 12px; border-radius: 3px; font-size: 0.72rem;
+  font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase;
+  border: 1px solid var(--border-red);
+}
+.nav-links { display: flex; align-items: center; gap: 4px; }
+.nav-link {
+  color: var(--text-muted); text-decoration: none; font-size: 0.85rem;
+  padding: 6px 12px; border-radius: 2px; transition: all 0.2s;
+  border: 1px solid transparent;
+}
+.nav-link:hover { color: var(--text); border-color: var(--border); }
+.nav-link.active { color: var(--text); border-color: var(--border-red); }
+.nav-logout {
+  background: none; border: 1px solid var(--border); color: var(--text-muted);
+  font-family: 'DM Sans', sans-serif; font-size: 0.82rem; padding: 6px 14px;
+  border-radius: 2px; cursor: pointer; transition: all 0.2s;
+}
+.nav-logout:hover { border-color: var(--crimson); color: #e06060; }
+
+/* ===== LOGIN SCREEN ===== */
+#loginScreen {
+  position: fixed; inset: 0; display: flex;
+  align-items: center; justify-content: center;
+  background: var(--bg); z-index: 500;
+}
+
+.login-wrap {
+  display: grid; grid-template-columns: 1fr 440px;
+  width: 900px; max-width: 95vw;
+  background: var(--card); border: 1px solid var(--border-red);
+  border-radius: 4px; overflow: hidden;
+  box-shadow: 0 40px 80px rgba(0,0,0,0.6);
+}
+
+/* Left decorative panel */
+.login-deco {
+  background: linear-gradient(145deg, #0a0208 0%, #1a0505 50%, #0a0208 100%);
+  padding: 3rem; display: flex; flex-direction: column; justify-content: space-between;
+  position: relative; overflow: hidden;
+}
+.login-deco::before {
+  content: '';
+  position: absolute; top: -80px; right: -80px;
+  width: 300px; height: 300px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(139,0,0,0.15) 0%, transparent 70%);
+}
+.login-deco::after {
+  content: '';
+  position: absolute; bottom: -60px; left: -60px;
+  width: 200px; height: 200px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(139,0,0,0.08) 0%, transparent 70%);
+}
+.deco-brand {
+  font-family: 'Playfair Display', serif; font-size: 1.6rem;
+  color: var(--text); position: relative; z-index: 1;
+}
+.deco-brand span { color: var(--crimson); }
+.deco-stats { position: relative; z-index: 1; }
+.deco-stat { margin-bottom: 1.5rem; }
+.deco-stat .ds-num {
+  font-family: 'Playfair Display', serif; font-size: 2.5rem;
+  color: var(--text); line-height: 1;
+}
+.deco-stat .ds-lbl {
+  font-size: 0.65rem; letter-spacing: 0.25em; text-transform: uppercase;
+  color: var(--text-muted); margin-top: 2px;
+}
+.deco-stat .ds-bar {
+  height: 2px; background: rgba(255,255,255,0.06);
+  border-radius: 2px; margin-top: 8px; overflow: hidden;
+}
+.deco-stat .ds-fill { height: 100%; background: var(--crimson); border-radius: 2px; }
+.deco-tagline {
+  font-size: 0.78rem; color: var(--text-muted); line-height: 1.6;
+  position: relative; z-index: 1;
+  border-left: 2px solid var(--crimson); padding-left: 12px;
+}
+
+/* Right login form */
+.login-form-wrap {
+  padding: 3rem; display: flex; flex-direction: column; justify-content: center;
+  position: relative;
+}
+.login-form-wrap::before {
+  content: ''; position: absolute; top: 0; left: 0; bottom: 0; width: 1px;
+  background: linear-gradient(to bottom, transparent, var(--border-red), transparent);
+}
+
+.login-eyebrow {
+  font-size: 0.65rem; letter-spacing: 0.35em; text-transform: uppercase;
+  color: var(--crimson); margin-bottom: 8px;
+}
+.login-title {
+  font-family: 'Playfair Display', serif; font-size: 1.8rem; font-weight: 400;
+  margin-bottom: 2rem; line-height: 1.15;
+}
+.login-title em { font-style: italic; color: var(--gold); }
+
+.lf-field { margin-bottom: 1.1rem; }
+.lf-field label {
+  display: block; font-size: 0.67rem; letter-spacing: 0.15em;
+  text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px;
+}
+.lf-field input {
+  width: 100%; padding: 11px 14px;
+  background: var(--card2); border: 1px solid var(--border);
+  border-radius: 2px; color: var(--text);
+  font-family: 'DM Sans', sans-serif; font-size: 0.92rem;
+  outline: none; transition: border-color 0.2s;
+}
+.lf-field input:focus { border-color: var(--crimson); }
+
+.login-submit {
+  width: 100%; padding: 12px; margin-top: 0.5rem;
+  background: var(--crimson); border: none; border-radius: 2px;
+  color: #fff; font-family: 'DM Sans', sans-serif;
+  font-size: 0.8rem; font-weight: 500; letter-spacing: 0.18em;
+  text-transform: uppercase; cursor: pointer; transition: background 0.2s;
+}
+.login-submit:hover { background: var(--crimson-light); }
+.login-submit:disabled { background: #333; color: var(--text-muted); cursor: default; }
+
+.login-error {
+  margin-top: 0.8rem; text-align: center; font-size: 0.8rem;
+  color: #e05252; min-height: 18px;
+}
+
+/* ===== APP ===== */
+#app { display: none; position: relative; z-index: 1; }
+
+.main { padding: 100px 2.5rem 60px; max-width: 1440px; margin: 0 auto; }
+
+/* WELCOME BANNER */
+.welcome-banner {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1.5rem 2rem; background: var(--card);
+  border: 1px solid var(--border-red); border-radius: 4px;
+  margin-bottom: 2rem; position: relative; overflow: hidden;
+}
+.welcome-banner::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--crimson), transparent);
+}
+.wb-left {}
+.wb-greeting {
+  font-size: 0.65rem; letter-spacing: 0.3em; text-transform: uppercase;
+  color: var(--text-muted); margin-bottom: 4px;
+}
+.wb-name {
+  font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 400;
+}
+.wb-name span { color: var(--gold); font-style: italic; }
+.wb-time { font-size: 0.78rem; color: var(--text-muted); margin-top: 3px; }
+.wb-right { display: flex; gap: 1px; background: var(--border); border-radius: 3px; overflow: hidden; }
+.wb-stat { padding: 10px 20px; background: var(--card); text-align: center; min-width: 90px; }
+.wb-stat .wsn { font-family: 'Playfair Display', serif; font-size: 1.6rem; color: var(--text); }
+.wb-stat .wsl { font-size: 0.58rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-muted); margin-top: 1px; }
+
+/* KPI GRID */
+.kpi-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 2px; background: var(--border);
+  border: 1px solid var(--border); border-radius: 4px; overflow: hidden;
+  margin-bottom: 2rem;
+}
+
+.kpi-card {
+  background: var(--card); padding: 1.5rem;
+  position: relative; overflow: hidden; transition: background 0.2s;
+}
+.kpi-card:hover { background: #0f1825; }
+.kpi-card::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+  background: var(--crimson); transform: scaleY(0); transform-origin: bottom; transition: transform 0.3s;
+}
+.kpi-card:hover::before { transform: scaleY(1); }
+
+.kpi-icon {
+  font-size: 1.6rem; margin-bottom: 12px; display: block; opacity: 0.7;
+}
+.kpi-label {
+  font-size: 0.62rem; letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--text-muted); margin-bottom: 6px;
+}
+.kpi-value {
+  font-family: 'Playfair Display', serif; font-size: 2.2rem;
+  color: var(--text); line-height: 1;
+}
+.kpi-value.gold { color: var(--gold); }
+.kpi-value.green { color: #7dcf7d; }
+.kpi-sub {
+  font-size: 0.72rem; color: var(--text-muted); margin-top: 6px;
+}
+.kpi-bar { margin-top: 12px; height: 2px; background: rgba(255,255,255,0.05); border-radius: 2px; overflow: hidden; }
+.kpi-bar-fill { height: 100%; background: var(--crimson); border-radius: 2px; transition: width 0.6s ease; }
+
+/* DASHBOARD GRID */
+.dash-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 2px; background: var(--border);
+  border: 1px solid var(--border); border-radius: 4px; overflow: hidden;
+  margin-bottom: 2rem;
+}
+
+.dash-panel {
+  background: var(--card); padding: 1.5rem;
+  position: relative;
+}
+
+.panel-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 1.2rem; padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+.panel-title {
+  font-family: 'Playfair Display', serif; font-size: 1.05rem; font-weight: 400;
+}
+.panel-eyebrow {
+  font-size: 0.6rem; letter-spacing: 0.25em; text-transform: uppercase;
+  color: var(--crimson); margin-bottom: 2px;
+}
+.panel-action {
+  font-size: 0.72rem; color: var(--text-muted); text-decoration: none;
+  border-bottom: 1px solid var(--border); padding-bottom: 1px; transition: color 0.2s;
+}
+.panel-action:hover { color: var(--text); }
+
+/* RECENT ITEM ROW */
+.recent-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 0; border-bottom: 1px solid var(--border);
+  animation: fadeUp 0.3s ease both;
+}
+.recent-item:last-child { border-bottom: none; }
+.ri-icon {
+  width: 36px; height: 36px; flex-shrink: 0; border-radius: 3px;
+  background: var(--crimson-dim); border: 1px solid var(--border-red);
+  display: flex; align-items: center; justify-content: center; font-size: 1rem;
+}
+.ri-info { flex: 1; min-width: 0; }
+.ri-name {
+  font-size: 0.85rem; font-weight: 500;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.ri-sub { font-size: 0.7rem; color: var(--text-muted); margin-top: 1px; }
+.ri-right { text-align: right; flex-shrink: 0; }
+.ri-val { font-family: 'Playfair Display', serif; font-size: 0.95rem; color: var(--gold); }
+.ri-date { font-size: 0.68rem; color: var(--text-muted); }
+
+/* STATUS BADGE */
+.s-badge {
+  font-size: 0.6rem; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase;
+  padding: 2px 8px; border-radius: 2px;
+}
+.s-paid { background: rgba(45,138,45,0.2); color: #7dcf7d; border: 1px solid rgba(45,138,45,0.3); }
+.s-pending { background: rgba(201,168,76,0.15); color: var(--gold); border: 1px solid rgba(201,168,76,0.3); }
+.s-cancelled { background: rgba(139,0,0,0.2); color: #e06060; border: 1px solid var(--border-red); }
+
+/* QUICK ACTIONS */
+.quick-actions {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 2px; background: var(--border);
+  border: 1px solid var(--border); border-radius: 4px; overflow: hidden;
+  margin-bottom: 2rem;
+}
+.qa-btn {
+  background: var(--card); padding: 1.2rem 1.5rem;
+  display: flex; align-items: center; gap: 12px;
+  text-decoration: none; color: var(--text);
+  transition: background 0.2s; cursor: pointer; border: none;
+  font-family: 'DM Sans', sans-serif; text-align: left;
+  position: relative; overflow: hidden;
+}
+.qa-btn:hover { background: #0f1825; }
+.qa-btn::before {
+  content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+  background: var(--crimson); transform: scaleX(0); transform-origin: left; transition: transform 0.25s;
+}
+.qa-btn:hover::before { transform: scaleX(1); }
+.qa-icon {
+  width: 38px; height: 38px; border-radius: 3px; flex-shrink: 0;
+  background: var(--crimson-dim); border: 1px solid var(--border-red);
+  display: flex; align-items: center; justify-content: center; font-size: 1.1rem;
+}
+.qa-text .qt-label {
+  font-size: 0.82rem; font-weight: 500; display: block;
+}
+.qa-text .qt-sub {
+  font-size: 0.68rem; color: var(--text-muted); margin-top: 1px;
+}
+
+/* CATEGORY DISTRIBUTION */
+.cat-list { display: flex; flex-direction: column; gap: 10px; }
+.cat-row {}
+.cat-meta { display: flex; justify-content: space-between; margin-bottom: 4px; }
+.cat-name { font-size: 0.78rem; }
+.cat-pct { font-size: 0.72rem; color: var(--text-muted); font-family: 'DM Mono', monospace; }
+.cat-track { height: 3px; background: rgba(255,255,255,0.05); border-radius: 2px; overflow: hidden; }
+.cat-fill { height: 100%; background: var(--crimson); border-radius: 2px; transition: width 0.6s ease; }
+
+/* REVENUE CHART (simple bars) */
+.rev-chart { display: flex; align-items: flex-end; gap: 6px; height: 80px; margin-top: 1rem; }
+.rev-bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.rev-bar { width: 100%; background: var(--crimson-dim); border-radius: 2px 2px 0 0; border-top: 1px solid var(--crimson); transition: height 0.5s ease; min-height: 4px; }
+.rev-bar-lbl { font-size: 0.58rem; color: var(--text-muted); font-family: 'DM Mono', monospace; }
+
+/* TOAST */
+.toast {
+  position: fixed; bottom: 2rem; right: 2rem; padding: 12px 20px; border-radius: 3px;
+  font-size: 0.85rem; z-index: 9999; opacity: 0; transform: translateY(10px);
+  transition: all 0.3s; pointer-events: none;
+}
+.toast.show { opacity: 1; transform: translateY(0); }
+.toast.success { background: #1a3a1a; border: 1px solid #2d6a2d; color: #7dcf7d; }
+.toast.error { background: #3a1a1a; border: 1px solid #6a2d2d; color: #cf7d7d; }
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--crimson); border-radius: 2px; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 1100px) {
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  .dash-grid { grid-template-columns: 1fr; }
+  .quick-actions { grid-template-columns: repeat(2, 1fr); }
+  .login-wrap { grid-template-columns: 1fr; }
+  .login-deco { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav id="navbar" style="display:none;">
+  <div class="nav-brand">Event<span>Sense</span></div>
+  <div class="nav-right">
+    <div class="nav-links">
+      <a href="admin-dashboard.html" class="nav-link active">Dashboard</a>
+      <a href="events.html" class="nav-link">Événements</a>
+      <a href="ListeUtilisateur.html" class="nav-link">Utilisateurs</a>
+      <a href="tickets.html" class="nav-link">Tickets</a>
+    </div>
+    <div class="nav-admin-info">
+      <div class="nav-avatar" id="navAvatar">A</div>
+      <div class="nav-name">
+        <strong id="navName">Admin</strong>
+        <span id="navEmail"></span>
+      </div>
+    </div>
+    <span class="admin-badge">Admin</span>
+    <button class="nav-logout" onclick="doLogout()">Déconnexion</button>
+  </div>
+</nav>
+
+<!-- LOGIN SCREEN -->
+<div id="loginScreen">
+  <div class="login-wrap">
+
+    <!-- Left decorative panel -->
+    <div class="login-deco">
+      <div class="deco-brand">Event<span>Sense</span></div>
+      <div class="deco-stats">
+        <div class="deco-stat">
+          <div class="ds-num" id="decoEvents">—</div>
+          <div class="ds-lbl">Événements actifs</div>
+          <div class="ds-bar"><div class="ds-fill" id="decoEventsBar" style="width:0%"></div></div>
+        </div>
+        <div class="deco-stat">
+          <div class="ds-num" id="decoTickets">—</div>
+          <div class="ds-lbl">Tickets vendus</div>
+          <div class="ds-bar"><div class="ds-fill" id="decoTicketsBar" style="width:0%"></div></div>
+        </div>
+      </div>
+      <div class="deco-tagline">
+        Tableau de bord administrateur — accès restreint aux membres autorisés.
+      </div>
+    </div>
+
+    <!-- Right form -->
+    <div class="login-form-wrap">
+      <div class="login-eyebrow">Espace Administrateur</div>
+      <div class="login-title">Connexion <em>Admin</em></div>
+
+      <div class="lf-field">
+        <label>Adresse Email</label>
+        <input type="email" id="loginEmail" placeholder="admin@eventsense.ma" autocomplete="email">
+      </div>
+      <div class="lf-field">
+        <label>Mot de Passe</label>
+        <input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password">
+      </div>
+
+      <button class="login-submit" id="loginBtn" onclick="doLogin()">Accéder au tableau de bord</button>
+      <div class="login-error" id="loginError"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="main">
+
+    <!-- WELCOME BANNER -->
+    <div class="welcome-banner">
+      <div class="wb-left">
+        <div class="wb-greeting">Bienvenue de retour</div>
+        <div class="wb-name">Bonjour, <span id="welcomeName">Admin</span></div>
+        <div class="wb-time" id="welcomeTime"></div>
+      </div>
+      <div class="wb-right">
+        <div class="wb-stat">
+          <div class="wsn" id="wbEvents">—</div>
+          <div class="wsl">Événements</div>
+        </div>
+        <div class="wb-stat">
+          <div class="wsn" id="wbTickets">—</div>
+          <div class="wsl">Tickets</div>
+        </div>
+        <div class="wb-stat">
+          <div class="wsn" id="wbRevenue">—</div>
+          <div class="wsl">Revenus</div>
+        </div>
+        <div class="wb-stat">
+          <div class="wsn" id="wbUsers">—</div>
+          <div class="wsl">Utilisateurs</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- KPI CARDS -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <span class="kpi-icon">🎟️</span>
+        <div class="kpi-label">Total Tickets</div>
+        <div class="kpi-value" id="kpiTickets">—</div>
+        <div class="kpi-sub" id="kpiTicketsSub">chargement…</div>
+        <div class="kpi-bar"><div class="kpi-bar-fill" id="kpiTicketsBar" style="width:0%"></div></div>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-icon">💰</span>
+        <div class="kpi-label">Revenus Totaux</div>
+        <div class="kpi-value gold" id="kpiRevenue">—</div>
+        <div class="kpi-sub">MAD encaissés</div>
+        <div class="kpi-bar"><div class="kpi-bar-fill" id="kpiRevenueBar" style="width:0%"></div></div>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-icon">🎭</span>
+        <div class="kpi-label">Événements</div>
+        <div class="kpi-value" id="kpiEvents">—</div>
+        <div class="kpi-sub" id="kpiEventsSub">catégories</div>
+        <div class="kpi-bar"><div class="kpi-bar-fill" id="kpiEventsBar" style="width:0%"></div></div>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-icon">✅</span>
+        <div class="kpi-label">Taux de Vente</div>
+        <div class="kpi-value green" id="kpiRate">—</div>
+        <div class="kpi-sub">des places vendues</div>
+        <div class="kpi-bar"><div class="kpi-bar-fill" id="kpiRateBar" style="width:0%"></div></div>
+      </div>
+    </div>
+
+    <!-- QUICK ACTIONS -->
+    <div class="quick-actions">
+      <button class="qa-btn" onclick="window.location.href='events.html'">
+        <div class="qa-icon">🎭</div>
+        <div class="qa-text">
+          <span class="qt-label">Gérer les Événements</span>
+          <span class="qt-sub">Créer, modifier, supprimer</span>
+        </div>
+      </button>
+      <button class="qa-btn" onclick="window.location.href='users.html'">
+        <div class="qa-icon">👥</div>
+        <div class="qa-text">
+          <span class="qt-label">Gérer les Utilisateurs</span>
+          <span class="qt-sub">Voir tous les inscrits</span>
+        </div>
+      </button>
+      <button class="qa-btn" onclick="window.location.href='tickets.html'">
+        <div class="qa-icon">🎟️</div>
+        <div class="qa-text">
+          <span class="qt-label">Gérer les Tickets</span>
+          <span class="qt-sub">Suivi des ventes</span>
+        </div>
+      </button>
+    </div>
+
+    <!-- DASHBOARD PANELS -->
+    <div class="dash-grid">
+
+      <!-- Recent Tickets -->
+      <div class="dash-panel">
+        <div class="panel-header">
+          <div>
+            <div class="panel-eyebrow">Dernières ventes</div>
+            <div class="panel-title">Tickets Récents</div>
+          </div>
+          <a href="tickets.html" class="panel-action">Voir tout →</a>
+        </div>
+        <div id="recentTickets">
+          <div style="text-align:center;color:var(--text-muted);padding:2rem;font-size:0.85rem;">Chargement…</div>
+        </div>
+      </div>
+
+      <!-- Recent Events -->
+      <div class="dash-panel">
+        <div class="panel-header">
+          <div>
+            <div class="panel-eyebrow">Catalogue</div>
+            <div class="panel-title">Événements Récents</div>
+          </div>
+          <a href="events.html" class="panel-action">Voir tout →</a>
+        </div>
+        <div id="recentEvents">
+          <div style="text-align:center;color:var(--text-muted);padding:2rem;font-size:0.85rem;">Chargement…</div>
+        </div>
+      </div>
+
+      <!-- Category Distribution -->
+      <div class="dash-panel">
+        <div class="panel-header">
+          <div>
+            <div class="panel-eyebrow">Répartition</div>
+            <div class="panel-title">Catégories d'Événements</div>
+          </div>
+        </div>
+        <div class="cat-list" id="catList">
+          <div style="text-align:center;color:var(--text-muted);padding:2rem;font-size:0.85rem;">Chargement…</div>
+        </div>
+      </div>
+
+      <!-- Ticket Status -->
+      <div class="dash-panel">
+        <div class="panel-header">
+          <div>
+            <div class="panel-eyebrow">Analyse</div>
+            <div class="panel-title">Statut des Tickets</div>
+          </div>
+        </div>
+        <div id="ticketStatusList" style="display:flex;flex-direction:column;gap:10px;"></div>
+        <div style="margin-top:1.2rem;">
+          <div class="panel-eyebrow" style="margin-bottom:8px;">Revenus par événement</div>
+          <div class="rev-chart" id="revChart"></div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+const AUTH_API   = 'http://localhost:8091/auth';
+const EVENTS_API = 'http://localhost:8091/rest/events';
+const TICKETS_API= 'http://localhost:8091/rest/tickets';
+const PERSON_API = 'http://localhost:8091/rest/person';
+
+let adminId   = null;
+let adminUser = null;
+
+/* ===== CLOCK ===== */
+function updateClock() {
+  const now = new Date();
+  const el  = document.getElementById('welcomeTime');
+  if (el) el.textContent = now.toLocaleDateString('fr-FR', {
+    weekday: 'long', day: '2-digit', month: 'long', year: 'numeric',
+    hour: '2-digit', minute: '2-digit'
+  });
+}
+setInterval(updateClock, 1000);
+
+/* ===== PRELOAD DECO STATS ===== */
+fetch(EVENTS_API + '/all')
+  .then(r => r.json())
+  .then(data => {
+    document.getElementById('decoEvents').textContent = data.length;
+    document.getElementById('decoEventsBar').style.width = Math.min(data.length * 5, 100) + '%';
+  }).catch(() => {});
+
+/* ===== LOGIN ===== */
+document.getElementById('loginEmail').addEventListener('keydown',    e => { if (e.key === 'Enter') doLogin(); });
+document.getElementById('loginPassword').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+
+async function doLogin() {
+  const email    = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+
+  if (!email || !password) { loginErr('Veuillez remplir tous les champs'); return; }
+
+  const btn = document.getElementById('loginBtn');
+  btn.disabled    = true;
+  btn.textContent = 'Connexion…';
+
+  try {
+    const res  = await fetch(AUTH_API + '/login', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ email, passWord: password })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) { loginErr(data || 'Identifiants incorrects'); return; }
+
+    if (data.role !== 'ADMIN') {
+      loginErr('Accès refusé — compte administrateur requis');
+      return;
+    }
+
+    // ✅ Logged in
+    adminUser = data.user;
+    adminId   = adminUser.id;
+
+    // Store in localStorage so other admin pages can reuse
+    localStorage.setItem('adminUser', JSON.stringify(adminUser));
+
+    showApp();
+
+  } catch(err) {
+    loginErr('Erreur serveur — vérifiez votre connexion');
+  } finally {
+    btn.disabled    = false;
+    btn.textContent = 'Accéder au tableau de bord';
+  }
+}
+
+function loginErr(msg) {
+  const el = document.getElementById('loginError');
+  el.textContent = msg;
+  setTimeout(() => el.textContent = '', 4000);
+}
+
+/* ===== SHOW APP ===== */
+function showApp() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('navbar').style.display      = 'flex';
+  document.getElementById('app').style.display         = 'block';
+
+  // Update nav
+  const initials = ((adminUser.firstname||'A')[0] + (adminUser.lastname||'D')[0]).toUpperCase();
+  document.getElementById('navAvatar').textContent = initials;
+  document.getElementById('navName').textContent   = adminUser.firstname + ' ' + (adminUser.lastname || '');
+  document.getElementById('navEmail').textContent  = adminUser.email || '';
+  document.getElementById('welcomeName').textContent = adminUser.firstname;
+
+  updateClock();
+  loadDashboard();
+}
+
+function doLogout() {
+  if (!confirm('Se déconnecter ?')) return;
+  localStorage.removeItem('adminUser');
+  window.location.reload();
+}
+
+/* ===== CHECK EXISTING SESSION ===== */
+const _stored = localStorage.getItem('adminUser');
+if (_stored) {
+  try {
+    adminUser = JSON.parse(_stored);
+    adminId   = adminUser.id;
+    showApp();
+  } catch(e) {
+    localStorage.removeItem('adminUser');
+  }
+}
+
+/* ===== LOAD ALL DATA ===== */
+async function loadDashboard() {
+  try {
+    const [eventsRes, ticketsRes, usersRes] = await Promise.all([
+      fetch(EVENTS_API  + '/all'),
+      fetch(TICKETS_API + '/all?requesterId=' + adminId),
+      fetch(PERSON_API  + '/users?requesterId=' + adminId)
+    ]);
+
+    const events  = await eventsRes.json();
+    const tickets = ticketsRes.ok  ? await ticketsRes.json()  : [];
+    const users   = usersRes.ok    ? await usersRes.json()    : [];
+
+    renderKPIs(events, tickets, users);
+    renderWelcomeBanner(events, tickets, users);
+    renderRecentTickets(tickets);
+    renderRecentEvents(events);
+    renderCategoryDistribution(events);
+    renderTicketStatus(tickets);
+    renderRevenueChart(events, tickets);
+
+  } catch(err) {
+    showToast('Erreur de chargement des données', 'error');
+  }
+}
+
+/* ===== KPIs ===== */
+function renderKPIs(events, tickets, users) {
+  const totalTickets = tickets.length;
+  const paidTickets  = tickets.filter(t => t.status === 'PAID').length;
+  const revenue      = tickets.reduce((s, t) => s + parseFloat(t.pricePaid || 0), 0);
+  const totalSeats   = events.reduce((s, e) => s + (e.totalSeats || 0), 0);
+  const soldSeats    = events.reduce((s, e) => s + ((e.totalSeats||0) - (e.availableSeats||0)), 0);
+  const rate         = totalSeats ? Math.round((soldSeats / totalSeats) * 100) : 0;
+  const cats         = new Set(events.map(e => e.category).filter(Boolean)).size;
+
+  document.getElementById('kpiTickets').textContent    = totalTickets;
+  document.getElementById('kpiTicketsSub').textContent = paidTickets + ' payés';
+  document.getElementById('kpiTicketsBar').style.width = Math.min(totalTickets * 2, 100) + '%';
+
+  const rev = revenue > 999 ? (revenue/1000).toFixed(1) + 'k' : Math.round(revenue);
+  document.getElementById('kpiRevenue').textContent    = rev;
+  document.getElementById('kpiRevenueBar').style.width = Math.min(revenue / 1000, 100) + '%';
+
+  document.getElementById('kpiEvents').textContent    = events.length;
+  document.getElementById('kpiEventsSub').textContent = cats + ' catégories';
+  document.getElementById('kpiEventsBar').style.width = Math.min(events.length * 5, 100) + '%';
+
+  document.getElementById('kpiRate').textContent    = rate + '%';
+  document.getElementById('kpiRateBar').style.width = rate + '%';
+}
+
+function renderWelcomeBanner(events, tickets, users) {
+  const revenue = tickets.reduce((s, t) => s + parseFloat(t.pricePaid || 0), 0);
+  const rev = revenue > 999 ? (revenue/1000).toFixed(1) + 'k' : Math.round(revenue);
+
+  document.getElementById('wbEvents').textContent  = events.length;
+  document.getElementById('wbTickets').textContent = tickets.length;
+  document.getElementById('wbRevenue').textContent = rev;
+  document.getElementById('wbUsers').textContent   = users.length;
+
+  // Update deco
+  document.getElementById('decoTickets').textContent = tickets.length;
+  document.getElementById('decoTicketsBar').style.width = Math.min(tickets.length * 2, 100) + '%';
+}
+
+/* ===== RECENT TICKETS ===== */
+function renderRecentTickets(tickets) {
+  const recent = [...tickets].reverse().slice(0, 6);
+  const wrap   = document.getElementById('recentTickets');
+
+  if (!recent.length) {
+    wrap.innerHTML = `<p style="text-align:center;color:var(--text-muted);padding:2rem;font-size:0.85rem;">Aucun ticket</p>`;
+    return;
+  }
+
+  wrap.innerHTML = recent.map((t, i) => `
+    <div class="recent-item" style="animation-delay:${i*0.06}s">
+      <div class="ri-icon">🎟️</div>
+      <div class="ri-info">
+        <div class="ri-name">${t.userName || 'USER ' + t.userId}</div>
+        <div class="ri-sub">Event #${t.eventId} · Siège ${t.seatNumber || '—'}
+          <span class="s-badge ${statusClass(t.status)}">${t.status || '—'}</span>
+        </div>
+      </div>
+      <div class="ri-right">
+        <div class="ri-val">${t.pricePaid || 0} MAD</div>
+        <div class="ri-date">${formatDate(t.purchaseDate)}</div>
+      </div>
+    </div>`).join('');
+}
+
+/* ===== RECENT EVENTS ===== */
+function renderRecentEvents(events) {
+  const recent = [...events].reverse().slice(0, 6);
+  const wrap   = document.getElementById('recentEvents');
+
+  if (!recent.length) {
+    wrap.innerHTML = `<p style="text-align:center;color:var(--text-muted);padding:2rem;font-size:0.85rem;">Aucun événement</p>`;
+    return;
+  }
+
+  wrap.innerHTML = recent.map((e, i) => {
+    const pct = e.totalSeats ? Math.round(((e.totalSeats - (e.availableSeats||0)) / e.totalSeats) * 100) : 0;
+    return `
+    <div class="recent-item" style="animation-delay:${i*0.06}s">
+      <div class="ri-icon">${categoryIcon(e.category)}</div>
+      <div class="ri-info">
+        <div class="ri-name">${e.title}</div>
+        <div class="ri-sub">${e.location || '—'} · ${formatDate(e.eventDate)}</div>
+      </div>
+      <div class="ri-right">
+        <div class="ri-val">${e.price || 0} MAD</div>
+        <div class="ri-date">${pct}% complet</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ===== CATEGORY DISTRIBUTION ===== */
+function renderCategoryDistribution(events) {
+  const counts = {};
+  events.forEach(e => { if (e.category) counts[e.category] = (counts[e.category]||0) + 1; });
+  const total  = events.length || 1;
+  const sorted = Object.entries(counts).sort((a,b) => b[1]-a[1]).slice(0, 6);
+  const wrap   = document.getElementById('catList');
+
+  if (!sorted.length) {
+    wrap.innerHTML = `<p style="color:var(--text-muted);font-size:0.85rem;">Aucune catégorie</p>`;
+    return;
+  }
+
+  wrap.innerHTML = sorted.map(([cat, count]) => {
+    const pct = Math.round((count / total) * 100);
+    return `
+    <div class="cat-row">
+      <div class="cat-meta">
+        <span class="cat-name">${categoryIcon(cat)} ${cat}</span>
+        <span class="cat-pct">${count} (${pct}%)</span>
+      </div>
+      <div class="cat-track"><div class="cat-fill" style="width:${pct}%"></div></div>
+    </div>`;
+  }).join('');
+}
+
+/* ===== TICKET STATUS ===== */
+function renderTicketStatus(tickets) {
+  const counts = { PAID: 0, PENDING: 0, CANCELLED: 0, USED: 0 };
+  tickets.forEach(t => { if (counts[t.status] !== undefined) counts[t.status]++; });
+  const total  = tickets.length || 1;
+  const wrap   = document.getElementById('ticketStatusList');
+
+  wrap.innerHTML = Object.entries(counts).map(([status, count]) => {
+    const pct = Math.round((count / total) * 100);
+    return `
+    <div class="cat-row">
+      <div class="cat-meta">
+        <span class="cat-name"><span class="s-badge ${statusClass(status)}">${status}</span></span>
+        <span class="cat-pct">${count} (${pct}%)</span>
+      </div>
+      <div class="cat-track"><div class="cat-fill" style="width:${pct}%"></div></div>
+    </div>`;
+  }).join('');
+}
+
+/* ===== REVENUE CHART ===== */
+function renderRevenueChart(events, tickets) {
+  // Group revenue by event
+  const revByEvent = {};
+  tickets.forEach(t => {
+    revByEvent[t.eventId] = (revByEvent[t.eventId]||0) + parseFloat(t.pricePaid || 0);
+  });
+
+  const topEvents = events
+    .filter(e => revByEvent[e.id])
+    .sort((a,b) => (revByEvent[b.id]||0) - (revByEvent[a.id]||0))
+    .slice(0, 8);
+
+  if (!topEvents.length) return;
+
+  const maxRev = Math.max(...topEvents.map(e => revByEvent[e.id]||0));
+  const wrap   = document.getElementById('revChart');
+
+  wrap.innerHTML = topEvents.map(e => {
+    const rev = revByEvent[e.id] || 0;
+    const h   = Math.max(Math.round((rev / maxRev) * 72), 4);
+    return `
+    <div class="rev-bar-wrap" title="${e.title}: ${rev} MAD">
+      <div class="rev-bar" style="height:${h}px;"></div>
+      <div class="rev-bar-lbl">${(rev/1000).toFixed(1)}k</div>
+    </div>`;
+  }).join('');
+}
+
+/* ===== HELPERS ===== */
+function statusClass(s) {
+  if (!s) return 's-pending';
+  const m = { PAID:'s-paid', PENDING:'s-pending', CANCELLED:'s-cancelled', USED:'s-paid' };
+  return m[s.toUpperCase()] || 's-pending';
+}
+
+function categoryIcon(cat) {
+  if (!cat) return '🎟️';
+  const c = cat.toLowerCase();
+  if (c.includes('music') || c.includes('concert')) return '🎵';
+  if (c.includes('sport')) return '⚽';
+  if (c.includes('theatre')) return '🎭';
+  if (c.includes('cinema') || c.includes('film')) return '🎬';
+  if (c.includes('art')) return '🖼️';
+  return '🎟️';
+}
+
+function formatDate(d) {
+  if (!d) return '—';
+  return new Date(d).toLocaleDateString('fr-FR', { day:'2-digit', month:'short' });
+}
+
+/* ===== TOAST ===== */
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast ${type} show`;
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+</script>
+</body>
+</html>

@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @RestController
@@ -22,56 +23,65 @@ public class AuthController {
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     // ================= LOGIN =================
-    @PostMapping("/login")
+  @PostMapping("/login")
 public ResponseEntity<?> login(@RequestBody LoginRequest req) {
-
     try {
         return userRepository.findByEmail(req.getEmail())
                 .map(user -> {
-
-                    if (user.getPassword() == null) {
-                        return ResponseEntity.status(401)
-                                .body("Password not set");
+                    String storedPassword = user.getPassword();
+                    
+                    if (storedPassword == null || storedPassword.isEmpty()) {
+                        return ResponseEntity.status(401).body("Password not set");
+                    }
+                    
+                    boolean matches;
+                    if (storedPassword.startsWith("$2a$")) {
+                        matches = passwordEncoder.matches(req.getPassWord(), storedPassword);
+                    } else {
+                        matches = storedPassword.equals(req.getPassWord());
                     }
 
-                    if (!passwordEncoder.matches(req.getPassWord(), user.getPassword())) {
-                        return ResponseEntity.status(401)
-                                .body("Invalid password");
+                    if (!matches) {
+                        return ResponseEntity.status(401).body("Invalid password");
                     }
 
-                    // hide password
-                    user.setPassword(null);
+                    // Build safe response - NEVER return the entity directly
+                    Map<String, Object> safeUser = new HashMap<>();
+                    safeUser.put("id", user.getId());
+                    safeUser.put("firstname", user.getFirstname());
+                    safeUser.put("lastname", user.getLastname());
+                    safeUser.put("email", user.getEmail());
+                    safeUser.put("cin", user.getCin());
+                    safeUser.put("telephone", user.getTelephone());
+                    
+                    safeUser.put("role", user.getRole());
+                    safeUser.put("preferredCategories", user.getPreferredCategories());
+                    safeUser.put("preferredLocations", user.getPreferredLocations());
+                    safeUser.put("budgetMax", user.getBudgetMax());
+                    safeUser.put("preferredActors", user.getPreferredActors());
+                    safeUser.put("age", user.getAge());
+                    safeUser.put("birthdaydate", user.getBirthdaydate());
 
-                    // ================= ROLE CHECK =================
                     if ("ROLE_ADMIN".equals(user.getRole())) {
-                        return ResponseEntity.ok(
-                                Map.of(
-                                        "message", "Admin login successful",
-                                        "role", "ADMIN",
-                                        "user", user,
-                                        "redirect", "/admin-dashboard.html"
-                                )
-                        );
+                        return ResponseEntity.ok(Map.of(
+                            "message", "Admin login successful",
+                            "role", "ADMIN",
+                            "user", safeUser,
+                            "redirect", "/admin-dashboard.html"
+                        ));
                     }
 
-                    return ResponseEntity.ok(
-                            Map.of(
-                                    "message", "User login successful",
-                                    "role", "USER",
-                                    "user", user,
-                                    "redirect", "/user.html"
-                            )
-                    );
+                    return ResponseEntity.ok(Map.of(
+                        "message", "User login successful",
+                        "role", "USER",
+                        "user", safeUser,
+                        "redirect", "/user.html"
+                    ));
                 })
-                .orElse(
-                        ResponseEntity.status(401)
-                                .body("User not found")
-                );
-
+                .orElse(ResponseEntity.status(401).body("User not found"));
     } catch (Exception e) {
         e.printStackTrace();
-        return ResponseEntity.status(500)
-                .body("Server error: " + e.getMessage());
+        return ResponseEntity.status(500).body("Server error: " + e.getMessage());
     }
 }
 
