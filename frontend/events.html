@@ -527,6 +527,7 @@ nav h1 span { color: var(--crimson); }
   <h1>Event<span>Sense</span></h1>
   <div class="nav-links">
     <a href="page.html">Accueil</a>
+    <a href="organisateur.html">Tableau</a>
     <span class="admin-badge">ADMIN</span>
     <button class="nav-logout" onclick="doLogout()">Déconnexion</button>
   </div>
@@ -922,7 +923,7 @@ function saveEvent() {
   const rawEventDate = document.getElementById('mEventDate').value;
   let eventDate = null;
   if (rawEventDate) {
-    eventDate = rawEventDate; // datetime-local already outputs ISO-like format
+    eventDate = rawEventDate.length === 16 ? rawEventDate + ':00' : rawEventDate;
   }
 
   const organizerIdVal = document.getElementById('mOrganizerId').value;
